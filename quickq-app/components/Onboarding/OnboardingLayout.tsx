@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { View, StyleSheet, FlatList, Animated, Text, Pressable } from 'react-native';
 import OnboardingLayoutItem from './OnboardingLayoutItem';
 import { onBoardingSlides } from '../../configs/constants';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { ArrowLeft, ArrowRight } from '@tamagui/lucide-icons'
 import { Button } from "tamagui";
 
@@ -41,7 +41,7 @@ const OnboardingLayout = () => {
 
     const renderAnimatedUI = () => {
         return (
-            <View style={{ flex: 0.6, }}>
+            <View style={{ flex: 0.7 }}>
                 <Animated.FlatList
                     data={onBoardingSlides}
                     horizontal
@@ -80,7 +80,9 @@ const OnboardingLayout = () => {
 
                 {(currentIndex == onBoardingSlides.length - 1) &&
                     <View style={styles.registerContainer}>
-                        <Button style={styles.registerButton}>
+                        <Button 
+                            style={styles.registerButton}
+                            onPress={() => router.push('/(routes)/Register')}>
                             <Text style={styles.registerText}>
                                 Create Account
                             </Text>
@@ -91,7 +93,8 @@ const OnboardingLayout = () => {
                                 Have an account?
                             </Text>
 
-                            <Pressable onPress={() => { }}>
+                            <Pressable 
+                                onPress={() => router.push('/(routes)/Login')}>
                                 <Text style={styles.loginHighlight}>
                                     Login
                                 </Text>

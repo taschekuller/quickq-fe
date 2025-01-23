@@ -1,9 +1,9 @@
 import React from 'react'
-import { OnboardingScreen } from '@/screens'
+import { LoginScreen } from '@/screens'
 
 const index = () => {
   return (
-    <OnboardingScreen />
+    <LoginScreen />
   )
 }
 
