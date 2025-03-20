@@ -1,40 +1,35 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, TextInput, TouchableOpacity } from 'react-native';
-import { Button } from 'tamagui';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Button, Input, Text, XStack, YStack } from 'tamagui';
+import { Mail, Lock, LogIn } from '@tamagui/lucide-icons';
 import { useRouter } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { LogIn } from '@tamagui/lucide-icons'
-
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 WebBrowser.maybeCompleteAuthSession();
-
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const router = useRouter();
 
+  // Google authentication setup
   const [request, response, promptAsync] = Google.useAuthRequest({
     androidClientId: 'YOUR_ANDROID_CLIENT_ID',
     iosClientId: 'YOUR_IOS_CLIENT_ID',
-    clientId: 'YOUR_EXPO_CLIENT_ID'
+    clientId: 'YOUR_EXPO_CLIENT_ID',
   });
 
-  const handleRegister = () => {
-    // TODO: Implement registration logic
-    console.log('Register attempted with:', email, password, name);
-    router.push('/(routes)/Onboarding');
-  };
-
-  const handleGoogleAuth = async () => {
-    const result = await promptAsync();
-    if (result?.type === 'success') {
-      // Handle successful Google authentication
-      console.log('Google auth successful:', result);
+  useEffect(() => {
+    if (response?.type === 'success') {
+      console.log('Google auth success:', response);
       router.push('/(routes)/Onboarding');
     }
+  }, [response]);
+
+  const handleGoogleAuth = async () => {
+    await promptAsync();
   };
 
   const handleAppleAuth = async () => {
@@ -45,87 +40,121 @@ const RegisterScreen = () => {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      // Handle successful Apple authentication
+
       console.log('Apple auth successful:', credential);
       router.push('/(routes)/Onboarding');
     } catch (e: any) {
-      if (e.code === 'ERR_CANCELED') {
-        // Handle user cancellation
-      } else {
-        // Handle other errors
-      }
+      console.log('Apple auth error:', e);
     }
+  };
+
+  const handleLogin = () => {
+    console.log('Login attempted with:', email, password);
+    router.push('/(routes)/Onboarding');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Create Account</Text>
-        <Text style={styles.subHeaderText}>Sign up to get started</Text>
+        <Text style={styles.headerText}>Hoşgeldiniz</Text>
+        <Text style={styles.subHeaderText}>QuickQ</Text>
       </View>
 
       <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Full Name"
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <XStack alignItems="center" style={styles.inputContainer}>
+          <Ionicons name="person-circle-outline" size={24} color="gray" />
+          <Input
+            flex={1}
+            height={50}
+            placeholder="İsim Soyisim"
+            placeholderTextColor="gray"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            borderWidth={0}
+            backgroundColor={'transparent'}
+          />
+        </XStack>
+        <XStack alignItems="center" style={styles.inputContainer}>
+          <Mail size={20} color="gray" />
+          <Input
+            flex={1}
+            height={50}
+            placeholder="Email"
+            placeholderTextColor="gray"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            borderWidth={0}
+            backgroundColor={'transparent'}
+          />
+        </XStack>
 
-        <Button 
-          onPress={handleRegister}
-          style={styles.registerButton}
-          theme="active"
-        >
-          Register
+        <XStack alignItems="center" style={styles.inputContainer}>
+          <Lock size={20} color="gray" />
+          <Input
+            flex={1}
+            height={50}
+            placeholder="Password"
+            placeholderTextColor="gray"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            borderWidth={0}
+            backgroundColor={'transparent'}
+          />
+        </XStack>
+
+        <XStack alignItems="center" style={styles.inputContainer}>
+          <Lock size={20} color="gray" />
+          <Input
+            flex={1}
+            height={50}
+            placeholder="Password"
+            placeholderTextColor="gray"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            borderWidth={0}
+            backgroundColor={'transparent'}
+          />
+        </XStack>
+
+        <Button onPress={handleLogin} style={styles.loginButton} theme="active" borderRadius={36}>
+          <Text style={{ fontSize: 18, fontWeight: '700' }}>Kayıt Oluştur</Text>
         </Button>
 
-        <Text style={styles.orText}>or continue with</Text>
+        <TouchableOpacity onPress={() => router.push('/(routes)/Register')}>
+          <Text style={styles.signUpLink}>Hesabın var mı, Giriş Yap.</Text>
+        </TouchableOpacity>
 
-        <View style={styles.socialButtonsContainer}>
-          <Button
-            onPress={handleGoogleAuth}
-            style={styles.socialButton}
-            icon={LogIn}
-          >
-            Google
-          </Button>
+        <YStack style={{ bottom: 0, position: 'absolute', width: '100%', marginBottom: 20, alignItems: 'center' }}>
+          <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
+            Devam ederek QuickQ'nun
+          </Text>
+          <TouchableOpacity>
+            <Text style={{ color: '#CBD9E6', fontWeight: 'bold', fontSize: 14 }}>
+              Gizlilik Politikası ve Hizmet Şartları'nı
+            </Text>
+          </TouchableOpacity>
+          <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
+            kabul etmiş olursunuz.
+          </Text>
+        </YStack>
 
-          <AppleAuthentication.AppleAuthenticationButton
-            buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP}
-            buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-            cornerRadius={5}
-            style={styles.appleButton}
-            onPress={handleAppleAuth}
-          />
-        </View>
+
       </View>
     </View>
   );
 };
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#1e1e1e',
     padding: 20,
   },
   headerContainer: {
@@ -133,53 +162,72 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   headerText: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#bcbcbc',
   },
   subHeaderText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 32,
+    color: '#e1e1e1',
+    fontWeight: 'bold',
     marginTop: 8,
   },
   formContainer: {
     flex: 1,
-    justifyContent: 'center',
+    borderRadius: 12,
+    padding: 20,
   },
-  input: {
-    height: 50,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    borderRadius: 36,
     paddingHorizontal: 16,
     marginBottom: 16,
-    fontSize: 16,
   },
-  registerButton: {
+  loginButton: {
+    borderRadius: 36,
     height: 50,
     marginTop: 16,
     marginBottom: 24,
+    backgroundColor: '#D9F87F',
+  },
+  signUpText: {
+    textAlign: 'center',
+    color: '#B1B8BE',
+    fontSize: 14,
+  },
+  signUpLink: {
+    color: '#CBD9E6',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  divider: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  line: {
+    height: 0.5,
+    flex: 1,
+    backgroundColor: '#B1B8BE',
   },
   orText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 14,
-    marginVertical: 16,
+    fontSize: 16,
+    color: '#B1B8BE',
+    marginHorizontal: 10,
   },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  authButtons: {
     marginTop: 16,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    flex: 0.4,
+    gap: 8,
   },
   socialButton: {
     flex: 1,
-    marginRight: 8,
-    height: 50,
-  },
-  appleButton: {
-    flex: 1,
-    marginLeft: 8,
-    height: 50,
   },
 });
 
