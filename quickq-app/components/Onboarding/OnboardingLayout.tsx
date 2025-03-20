@@ -66,7 +66,7 @@ const OnboardingLayout = () => {
             <View style={{ ...styles.buttonContainer, justifyContent: currentIndex > 0 ? 'space-between' : 'center' }}>
                 {(currentIndex > 0 && currentIndex < onBoardingSlides.length - 1) &&
                     <View style={styles.prevBtn}>
-                        <Button icon={ArrowLeft} style={styles.buttonIcons} scaleIcon={2} onPress={() => {
+                        <Button icon={ArrowLeft} style={styles.buttonIcons} color="#d9f87f" scaleIcon={2} onPress={() => {
                             handlePrevSlide()
                         }} />
                     </View>}
@@ -80,7 +80,7 @@ const OnboardingLayout = () => {
 
                 {(currentIndex == onBoardingSlides.length - 1) &&
                     <View style={styles.registerContainer}>
-                        <Button 
+                        <Button
                             style={styles.registerButton}
                             onPress={() => router.push('/(routes)/Register')}>
                             <Text style={styles.registerText}>
@@ -93,7 +93,7 @@ const OnboardingLayout = () => {
                                 Have an account?
                             </Text>
 
-                            <Pressable 
+                            <Pressable
                                 onPress={() => router.push('/(routes)/Login')}>
                                 <Text style={styles.loginHighlight}>
                                     Login
@@ -136,12 +136,13 @@ const styles = StyleSheet.create({
 
     },
     prevBtn: {
-        backgroundColor: '#e1e1e1',
         height: 64,
         width: 64,
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center',
+        borderColor: '#d9f87f',
+        borderWidth: 2,
     },
     nextBtn: {
         backgroundColor: '#d9f87f',
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
         color: "#b9aee5",
         fontSize: 16,
         fontWeight: 600,
-        padding:4,
+        padding: 4,
 
     }
 });
