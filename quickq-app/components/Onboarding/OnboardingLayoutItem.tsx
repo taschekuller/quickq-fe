@@ -19,7 +19,7 @@ const OnboardingLayoutItem = ({ item }: { item: TOnboardingProps['item'] }) => {
                 <Image
                     source={ item.image }
                     style={[styles.image]} /> 
-                <View style={{flex: 0.3}}>
+                <View style={{flex: 0.5}}>
                     <Text style={styles.title}>{item.title}</Text>
                     <Text style={styles.description}>
                         {item.description} 
@@ -44,11 +44,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#1e1e1e',
     },
     image: {
-        flex: 0.3,
+        flex: 0.5,
         justifyContent: 'center',
         alignItems: 'center',
         width: '50%',
-        height: '50%',
         resizeMode: 'contain',
     },
     title: {

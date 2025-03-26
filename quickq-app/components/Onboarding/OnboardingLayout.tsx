@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { View, StyleSheet, FlatList, Animated, Dimensions, Button } from 'react-native';
+import { View, StyleSheet, FlatList, Animated, Text, Pressable } from 'react-native';
 import OnboardingLayoutItem from './OnboardingLayoutItem';
-
 import { onBoardingSlides } from '../../configs/constants';
-import { Redirect } from 'expo-router';
+import { Redirect, router } from 'expo-router';
+import { ArrowLeft, ArrowRight } from '@tamagui/lucide-icons'
+import { Button } from "tamagui";
+
 
 
 const OnboardingLayout = () => {
@@ -39,7 +41,7 @@ const OnboardingLayout = () => {
 
     const renderAnimatedUI = () => {
         return (
-            <View style={{ flex: 0.8, justifyContent: 'center' }}>
+            <View style={{ flex: 0.7 }}>
                 <Animated.FlatList
                     data={onBoardingSlides}
                     horizontal
@@ -62,19 +64,47 @@ const OnboardingLayout = () => {
     const renderButtonUI = () => {
         return (
             <View style={{ ...styles.buttonContainer, justifyContent: currentIndex > 0 ? 'space-between' : 'center' }}>
-                {currentIndex > 0 &&
+                {(currentIndex > 0 && currentIndex < onBoardingSlides.length - 1) &&
                     <View style={styles.prevBtn}>
-                        <Button title={'<-'} onPress={() => {
+                        <Button icon={ArrowLeft} style={styles.buttonIcons} color="#d9f87f" scaleIcon={2} onPress={() => {
                             handlePrevSlide()
                         }} />
                     </View>}
 
-                <View style={styles.nextBtn}>
-                    <Button title="->" onPress={() => {
-                        handleNextSlide()
-                    }} />
-                </View>
+                {(currentIndex < onBoardingSlides.length - 1) &&
+                    <View style={styles.nextBtn}>
+                        <Button icon={ArrowRight} style={styles.buttonIcons} scaleIcon={2} onPress={() => {
+                            handleNextSlide()
+                        }} />
+                    </View>}
+
+                {(currentIndex == onBoardingSlides.length - 1) &&
+                    <View style={styles.registerContainer}>
+                        <Button
+                            style={styles.registerButton}
+                            onPress={() => router.push('/(routes)/Register')}>
+                            <Text style={styles.registerText}>
+                                Create Account
+                            </Text>
+                        </Button>
+
+                        <View style={styles.loginTextContainer}>
+                            <Text style={styles.loginText}>
+                                Have an account?
+                            </Text>
+
+                            <Pressable
+                                onPress={() => router.push('/(routes)/Login')}>
+                                <Text style={styles.loginHighlight}>
+                                    Login
+                                </Text>
+                            </Pressable>
+                        </View>
+
+                    </View>
+                }
             </View>
+
         )
     }
 
@@ -89,23 +119,30 @@ const OnboardingLayout = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
+        paddingVertical: 96,
+        justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: '#1e1e1e',
+
     },
     buttonContainer: {
         display: 'flex',
+        justifyContent: "flex-end",
+        alignItems: "flex-end",
         flex: 0.2,
         flexDirection: 'row',
-        width: '80%',
+        width: '100%',
+        paddingHorizontal: 48,
+
     },
     prevBtn: {
-        backgroundColor: '#e1e1e1',
         height: 64,
         width: 64,
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center',
+        borderColor: '#d9f87f',
+        borderWidth: 2,
     },
     nextBtn: {
         backgroundColor: '#d9f87f',
@@ -114,6 +151,50 @@ const styles = StyleSheet.create({
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: "center"
+    },
+    buttonIcons: {
+        backgroundColor: 'transparent',
+        color: 'black',
+    },
+    registerContainer: {
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        gap: 12,
+        width: "100%"
+    },
+    registerButton: {
+        width: 250,
+        height: 48,
+        borderRadius: 20,
+        backgroundColor: "#d9f87f",
+    },
+    registerText: {
+        color: "#1e1e1e",
+        fontWeight: 600,
+        fontSize: 18,
+    },
+    loginTextContainer: {
+
+        display: "flex",
+        alignItems: "center",
+        justifyContent: 'center',
+        flexDirection: "row",
+        padding: 8,
+        gap: 4,
+    },
+    loginText: {
+        fontSize: 16,
+        fontWeight: 500,
+        color: "#e1e1e1",
+    },
+    loginHighlight: {
+        color: "#b9aee5",
+        fontSize: 16,
+        fontWeight: 600,
+        padding: 4,
+
     }
 });
 
