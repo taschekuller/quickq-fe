@@ -1,11 +1,11 @@
 import React from 'react'
 import { OnboardingScreen } from '@/screens'
 
-const index = () => {
+const OnboardingPage = () => {
   return (
     <OnboardingScreen />
   )
 }
 
-export default index
+export default OnboardingPage
 
