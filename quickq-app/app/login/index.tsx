@@ -1,11 +1,11 @@
 import React from 'react'
 import { LoginScreen } from '@/screens'
 
-const index = () => {
+const LoginPage = () => {
   return (
     <LoginScreen />
   )
 }
 
-export default index
+export default LoginPage
 

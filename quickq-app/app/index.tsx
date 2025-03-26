@@ -12,11 +12,11 @@ export default function index() {
         } else {
             setLoading(true)
         }
-    },[])
+    }, [])
 
     return (
         <>
-            <Redirect href={!loggedInUser ? '/(routes)/Onboarding' : '/(tabs)'} />
+            <Redirect href={!loggedInUser ? 'onboarding' : 'home'} />
         </>
     )
 }
