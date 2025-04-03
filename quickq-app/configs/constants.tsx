@@ -24,7 +24,7 @@ export const onBoardingSlides: onBoardingSlidesTypes[] = [
   {
     id: "4",
     title: "QuickQ'ya Hoşgeldin!",
-    description: "QuickQ için kayıt oluştur/giriş yap. ",
+    description: "QuickQ için kayıt oluştur veya giriş yap. ",
     highlightedText: "Öğrenmeye Başla.",
     image: require("../assets/images/Onboarding/Onboarding3.png"),
   },

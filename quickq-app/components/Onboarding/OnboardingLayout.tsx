@@ -82,7 +82,7 @@ const OnboardingLayout = () => {
                     <View style={styles.registerContainer}>
                         <Button
                             style={styles.registerButton}
-                            onPress={() => router.push('register')}>
+                            onPress={() => router.push('/register')}>
                             <Text style={styles.registerText}>
                                 Hesap Oluştur
                             </Text>
@@ -94,7 +94,7 @@ const OnboardingLayout = () => {
                             </Text>
 
                             <Pressable
-                                onPress={() => router.push('login')}>
+                                onPress={() => router.push('/register')}>
                                 <Text style={styles.loginHighlight}>
                                     Giriş Yap
                                 </Text>

@@ -24,7 +24,7 @@ const LoginScreen = () => {
   useEffect(() => {
     if (response?.type === 'success') {
       console.log('Google auth success:', response);
-      router.push('/Onboarding');
+      router.push('/onboarding');
     }
   }, [response]);
 
@@ -42,7 +42,7 @@ const LoginScreen = () => {
       });
 
       console.log('Apple auth successful:', credential);
-      router.push('index');
+      router.push('/(app)/(tabs)/(home)');
     } catch (e: any) {
       console.log('Apple auth error:', e);
     }
@@ -51,7 +51,7 @@ const LoginScreen = () => {
   const handleLogin = () => {
     console.log('Login attempted with:', email, password);
 
-    router.push('home');
+    router.push('/(app)/(tabs)/(home)');
   };
 
   return (
@@ -101,7 +101,7 @@ const LoginScreen = () => {
           <Text style={styles.signUpText}>Şifremi Unuttum</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.push('register')}>
+        <TouchableOpacity onPress={() => router.push('/register')}>
           <Text style={styles.signUpLink}>Hesabın yok mu? Kayıt ol.</Text>
         </TouchableOpacity>
 

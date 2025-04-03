@@ -1,10 +1,17 @@
 import React from 'react'
-import { View, Text } from 'react-native'
+import { View, Text, SafeAreaView } from 'react-native'
+import Header from '@/components/Header/Header';
+import { ScrollView } from 'tamagui';
 
 export default function HomeScreen() {
   return (
-    <View>
-      <Text>Homasdasdsadsae</Text>
-    </View>
+    <ScrollView>
+      <View>
+        <Header />
+      </View>
+      <Text>
+        Homasdasdsadsae
+      </Text>
+    </ScrollView>
   )
 }
