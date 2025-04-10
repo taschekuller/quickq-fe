@@ -2,6 +2,9 @@ import React from 'react'
 import { View, Text, SafeAreaView } from 'react-native'
 import Header from '@/components/Header/Header';
 import { ScrollView } from 'tamagui';
+import WeeklySummary from '../WeeklySummary/WeeklySummary';
+import { GreetingHeader } from '../Header/GreetingHeader';
+import { RisingTeacher } from '../RisingTeachers/RisingTeachers';
 
 export default function HomeScreen() {
   return (
@@ -9,9 +12,15 @@ export default function HomeScreen() {
       <View>
         <Header />
       </View>
-      <Text>
-        Homasdasdsadsae
-      </Text>
+      <View>
+        <GreetingHeader name="Selin" />
+      </View>
+      <View>
+        <WeeklySummary />
+      </View>
+      <View>
+        <RisingTeacher />
+      </View>
     </ScrollView>
   )
 }
