@@ -25,8 +25,9 @@ export default function Header() {
             circular
             scaleIcon={2}
             icon={Menu}
+            color={"#e1e1e1"}
             onPress={openDrawer}
-            style={{ marginBottom: 10 }}
+            style={{ marginBottom: 10, backgroundColor: "none" }}
           >
           </Button>
         </View>
@@ -40,13 +41,15 @@ export default function Header() {
             circular
             scaleIcon={1.5}
             icon={Bell}
-            style={{ marginBottom: 10 }}
+            color={"#e1e1e1"}
+            style={{ marginBottom: 10, backgroundColor: "none" }}
           />
           <Button
             circular
             scaleIcon={1.5}
             icon={Cat}
-            style={{ marginBottom: 10 }}
+            color={"#e1e1e1"}
+            style={{ marginBottom: 10, backgroundColor: "none" }}
           />
         </View>
       </View>
@@ -70,5 +73,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
+    color: "#e1e1e1"
   },
 });
