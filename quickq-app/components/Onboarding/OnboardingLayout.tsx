@@ -82,21 +82,21 @@ const OnboardingLayout = () => {
                     <View style={styles.registerContainer}>
                         <Button
                             style={styles.registerButton}
-                            onPress={() => router.push('/(routes)/Register')}>
+                            onPress={() => router.push('/register')}>
                             <Text style={styles.registerText}>
-                                Create Account
+                                Hesap Oluştur
                             </Text>
                         </Button>
 
                         <View style={styles.loginTextContainer}>
                             <Text style={styles.loginText}>
-                                Have an account?
+                                Hesabın var mı?
                             </Text>
 
                             <Pressable
-                                onPress={() => router.push('/(routes)/Login')}>
+                                onPress={() => router.push('/register')}>
                                 <Text style={styles.loginHighlight}>
-                                    Login
+                                    Giriş Yap
                                 </Text>
                             </Pressable>
                         </View>

@@ -24,7 +24,7 @@ const RegisterScreen = () => {
   useEffect(() => {
     if (response?.type === 'success') {
       console.log('Google auth success:', response);
-      router.push('/(routes)/Onboarding');
+      router.push('/onboarding');
     }
   }, [response]);
 
@@ -42,7 +42,7 @@ const RegisterScreen = () => {
       });
 
       console.log('Apple auth successful:', credential);
-      router.push('/(routes)/Onboarding');
+      router.push('/(app)/(tabs)/(home)');
     } catch (e: any) {
       console.log('Apple auth error:', e);
     }
@@ -50,7 +50,7 @@ const RegisterScreen = () => {
 
   const handleLogin = () => {
     console.log('Login attempted with:', email, password);
-    router.push('/(routes)/Onboarding');
+    router.push('/(app)/(tabs)/(home)');
   };
 
   return (
@@ -123,10 +123,10 @@ const RegisterScreen = () => {
         </XStack>
 
         <Button onPress={handleLogin} style={styles.loginButton} theme="active" borderRadius={36}>
-          <Text style={{ fontSize: 18, fontWeight: '700' }}>Kayıt Oluştur</Text>
+          <Text style={{ fontSize: 18, fontWeight: '700' }}>Hesap Oluştur</Text>
         </Button>
 
-        <TouchableOpacity onPress={() => router.push('/(routes)/Register')}>
+        <TouchableOpacity onPress={() => router.push('/login')}>
           <Text style={styles.signUpLink}>Hesabın var mı, Giriş Yap.</Text>
         </TouchableOpacity>
 

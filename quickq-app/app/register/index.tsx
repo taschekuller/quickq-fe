@@ -1,11 +1,11 @@
 import React from 'react'
 import { RegisterScreen } from '@/screens'
 
-const index = () => {
+const RegisterPage = () => {
   return (
     <RegisterScreen />
   )
 }
 
-export default index
+export default RegisterPage
 
