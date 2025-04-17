@@ -20,7 +20,6 @@ export default function TabLayout() {
         // tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            backgroundColor: 'transparent',
             position: 'absolute',
           },
           default: {},
