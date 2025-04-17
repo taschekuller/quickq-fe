@@ -9,7 +9,7 @@ import { Categories } from '../Categories/Categories';
 
 export default function HomeScreen() {
   return (
-    <ScrollView>
+    <ScrollView flex={1} >
       <View>
         <Header />
       </View>

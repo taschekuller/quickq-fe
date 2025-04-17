@@ -17,13 +17,6 @@ export default function TabLayout() {
         tabBarActiveTintColor: "Colors[colorScheme ?? 'light'].tint",
         headerShown: false,
         tabBarButton: HapticTab,
-        // tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
         tabBarShowLabel: false,
         tabBarItemStyle: {
           paddingVertical: 5,
@@ -33,6 +26,42 @@ export default function TabLayout() {
         name="(home)/index"
         options={{
           title: 'Home',
+          tabBarIcon: ({ size }) => (
+            <Home
+              color={"#87888A"}
+              size={size * 1.2}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(forum)/index"
+        options={{
+          title: 'Forum',
+          tabBarIcon: ({ size }) => (
+            <Home
+              color={"#87888A"}
+              size={size * 1.2}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(messages)/index"
+        options={{
+          title: 'Messages',
+          tabBarIcon: ({ size }) => (
+            <Home
+              color={"#87888A"}
+              size={size * 1.2}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/index"
+        options={{
+          title: 'Profile',
           tabBarIcon: ({ size }) => (
             <Home
               color={"#87888A"}

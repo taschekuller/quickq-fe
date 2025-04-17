@@ -20,6 +20,7 @@ export default function AppLayout() {
         screenOptions={{
           headerShown: false,
           drawerType: 'front',
+          drawerPosition: 'left',
           drawerStyle: {
             width: "70%",
           },
