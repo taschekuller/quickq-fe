@@ -5,6 +5,7 @@ import { ScrollView } from 'tamagui';
 import WeeklySummary from '../WeeklySummary/WeeklySummary';
 import { GreetingHeader } from '../Header/GreetingHeader';
 import { RisingTeacher } from '../RisingTeachers/RisingTeachers';
+import { Categories } from '../Categories/Categories';
 
 export default function HomeScreen() {
   return (
@@ -20,6 +21,9 @@ export default function HomeScreen() {
       </View>
       <View>
         <RisingTeacher />
+      </View>
+      <View>
+        <Categories />
       </View>
     </ScrollView>
   )
