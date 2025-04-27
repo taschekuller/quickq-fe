@@ -42,7 +42,7 @@ const RegisterScreen = () => {
       });
 
       console.log('Apple auth successful:', credential);
-      router.push('/(app)/(tabs)/(home)');
+      router.push('/(app)/tabs/(home)');
     } catch (e: any) {
       console.log('Apple auth error:', e);
     }
@@ -50,7 +50,7 @@ const RegisterScreen = () => {
 
   const handleLogin = () => {
     console.log('Login attempted with:', email, password);
-    router.push('/(app)/(tabs)/(home)');
+    router.push('/(app)/tabs/(home)');
   };
 
   return (
