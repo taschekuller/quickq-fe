@@ -27,7 +27,7 @@ const questions = [
   {
     id: 2,
     category: 'Hücre Bölünmesi',
-    user: 'Seldi',
+    user: 'Selin',
     topic: 'Bir elektrik devresinde ampulün parlaklığını artırmak istiyoruz...',
     createdAt: '3h',
     tags: ['hücre', 'bölünme', 'mitoz'],
@@ -35,7 +35,7 @@ const questions = [
   {
     id: 3,
     category: 'Cümlede Anlam',
-    user: 'Barış',
+    user: 'Memoş',
     topic: 'Bir elektrik devresinde ampulün parlaklığını artırmak istiyoruz...',
     createdAt: '4h',
     tags: ['cümle'],
@@ -79,7 +79,9 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
 
             <XStack ai="center" space="$2">
               <Avatar circular size="$3" bg="$blue10">
-                <Avatar.Fallback>{question.user.charAt(0)}</Avatar.Fallback>
+                <Avatar.Fallback style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                  <Text>{question.user.charAt(0)}</Text>
+                </Avatar.Fallback>
               </Avatar>
               <Text fontSize="$4">{question.user}</Text>
               <Text fontSize="$2" color="$color9">{question.createdAt}</Text>
@@ -104,7 +106,9 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
               <YStack key={answer.id} space="$2" borderBottomWidth={1} borderColor="$color5" pb="$4">
                 <XStack ai="center" space="$2">
                   <Avatar circular size="$2" bg="$pink10">
-                    <Avatar.Fallback>{answer.user.charAt(0)}</Avatar.Fallback>
+                    <Avatar.Fallback style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                      <Text>{answer.user.charAt(0)}</Text>
+                    </Avatar.Fallback>
                   </Avatar>
                   <Text fontSize="$3">{answer.user}</Text>
                   <Text fontSize="$2" color="$color9">{answer.timeAgo}</Text>
@@ -176,7 +180,9 @@ export default function MainForum() {
                       </YStack>
                       <XStack ai="center" mt={5} gap={5}>
                         <Avatar circular size="$2" bg="$purple10">
-                          <Avatar.Fallback>{q.user.charAt(0)}</Avatar.Fallback>
+                          <Avatar.Fallback style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Text>{q.user.charAt(0)}</Text>
+                          </Avatar.Fallback>
                         </Avatar>
                         <Text fontSize="$3">{q.user}</Text>
                       </XStack>
@@ -191,7 +197,9 @@ export default function MainForum() {
                         <XStack gap={2}>
                           {q.tags.map((tag, index) => (
                             <Button radiused key={index} size="$1" theme="blue" mt={6} alignSelf="flex-start">
-                              {`#${tag}`}
+                              <Text>
+                                {`#${tag}`}
+                              </Text>
                             </Button>
                           ))}
                         </XStack>
