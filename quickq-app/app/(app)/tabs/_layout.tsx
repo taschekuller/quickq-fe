@@ -6,7 +6,7 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Home } from '@tamagui/lucide-icons'; // Import the icon component
+import { Home, MessageSquareMore, Users, User } from '@tamagui/lucide-icons'; // Import the icon component
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -39,7 +39,7 @@ export default function TabLayout() {
         options={{
           title: 'Forum',
           tabBarIcon: ({ size }) => (
-            <Home
+            <Users
               color={"#87888A"}
               size={size * 1.2}
             />
@@ -51,7 +51,7 @@ export default function TabLayout() {
         options={{
           title: 'Messages',
           tabBarIcon: ({ size }) => (
-            <Home
+            <MessageSquareMore
               color={"#87888A"}
               size={size * 1.2}
             />
@@ -63,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ size }) => (
-            <Home
+            <User
               color={"#87888A"}
               size={size * 1.2}
             />
