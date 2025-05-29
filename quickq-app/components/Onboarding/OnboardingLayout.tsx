@@ -88,7 +88,10 @@ const OnboardingLayout = () => {
                     <View style={styles.registerContainer}>
                         <Button
                             style={styles.registerButton}
-                            onPress={() => router.push('/register')}>
+                            onPress={() => {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                                router.push('/register')
+                            }}>
                             <Text style={styles.registerText}>
                                 Hesap Oluştur
                             </Text>
@@ -100,7 +103,10 @@ const OnboardingLayout = () => {
                             </Text>
 
                             <Pressable
-                                onPress={() => router.push('/register')}>
+                                onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                                    router.push('/register')
+                                }}>
                                 <Text style={styles.loginHighlight}>
                                     Giriş Yap
                                 </Text>
@@ -109,7 +115,7 @@ const OnboardingLayout = () => {
 
                     </View>
                 }
-            </View>
+            </View >
 
         )
     }
