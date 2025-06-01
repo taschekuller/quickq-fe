@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView } from 'tamagui';
-import { MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft } from '@tamagui/lucide-icons';
+import {
+  MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck
+
+} from '@tamagui/lucide-icons';
 
 interface QuestionDetailProps {
   question: {
@@ -138,6 +141,7 @@ interface Question {
 export default function MainForum() {
   const [questionDetail, setQuestionDetail] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null); // TODO : type
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Question[]>([]);
 
   const handleQuestionPress = (id: number) => {
     const foundQuestion = questions.find(q => q.id === id);
@@ -152,12 +156,32 @@ export default function MainForum() {
     setSelectedQuestion(null);
   };
 
+  const toggleBookmark = (question: Question, event: any) => {
+    event.stopPropagation(); // Prevent triggering the parent onPress
+
+    setBookmarkedQuestions(prev => {
+      const isAlreadyBookmarked = prev.some(q => q.id === question.id);
+
+      if (isAlreadyBookmarked) {
+        // Remove from bookmarks
+        return prev.filter(q => q.id !== question.id);
+      } else {
+        // Add to bookmarks
+        return [...prev, question];
+      }
+    });
+  };
+
+  const isBookmarked = (id: number) => {
+    return bookmarkedQuestions.some(q => q.id === id);
+  };
+
   return (
     <YStack f={1} px="$2">
       {questionDetail && selectedQuestion ? (
         <QuestionDetail question={selectedQuestion} onBackPress={handleBackPress} />
       ) : (
-        <>
+        <View>
           {/* Search bar */}
           <XStack ai="center" jc="space-between" mb="$4">
             <Input
@@ -191,8 +215,14 @@ export default function MainForum() {
                       </Text>
                       <XStack mt={5} gap={5} justifyContent="space-between" alignItems="center">
                         <XStack>
-                          <Button circular scaleIcon={1.5} icon={MessageCircleMore} />
-                          <Button circular scaleIcon={1.5} icon={Bookmark} />
+                          <Button circular scaleIcon={1.5} icon={MessageCircleMore} onPress={() => handleQuestionPress(q.id)} />
+                          <Button
+                            circular
+                            scaleIcon={1.5}
+                            icon={isBookmarked(q.id) ? BookmarkCheck : Bookmark}
+                            color={isBookmarked(q.id) ? '#D9F87F' : 'white'}
+                            onPress={(e) => toggleBookmark(q, e)}
+                          />
                         </XStack>
                         <XStack gap={2}>
                           {q.tags.map((tag, index) => (
@@ -210,7 +240,7 @@ export default function MainForum() {
               ))}
             </YStack>
           </ScrollView>
-        </>
+        </View>
       )}
     </YStack>
   );
