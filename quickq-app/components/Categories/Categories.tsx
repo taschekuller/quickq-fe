@@ -8,16 +8,16 @@ type Category = {
 }
 
 const categories: Category[] = [
-  { label: 'Edebiyat', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Tarih', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Felsefe', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Coğrafya', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Matematik', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Kimya', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Biyoloji', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Fizik', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Müzik', icon: require('@/assets/icons/Pen.png') },
-  { label: 'Spor', icon: require('@/assets/icons/Pen.png') },
+  { label: 'Edebiyat', icon: require('@/assets/icons/literature.png') },
+  { label: 'Tarih', icon: require('@/assets/icons/history.png') },
+  { label: 'Felsefe', icon: require('@/assets/icons/philosophy.png') },
+  { label: 'Coğrafya', icon: require('@/assets/icons/geography.png') },
+  { label: 'Matematik', icon: require('@/assets/icons/math.png') },
+  { label: 'Kimya', icon: require('@/assets/icons/chemistry.png') },
+  { label: 'Biyoloji', icon: require('@/assets/icons/biology.png') },
+  { label: 'Fizik', icon: require('@/assets/icons/physics.png') },
+  { label: 'Geometri', icon: require('@/assets/icons/geometry.png') },
+  { label: 'İngilizce', icon: require('@/assets/icons/english.png') },
 ]
 
 export const Categories = () => {
@@ -29,7 +29,6 @@ export const Categories = () => {
     <YStack space="$3" padding="$4" borderRadius="$4">
       <XStack justifyContent="space-between" alignItems="center">
         <XStack alignItems="center" space="$2">
-          <Image source={require('@/assets/icons/Pen.png')} width={24} height={24} />
           <Text fontSize="$4" color="white">Kategoriler</Text>
         </XStack>
         <Button
