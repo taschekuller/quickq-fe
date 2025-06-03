@@ -125,7 +125,7 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
 const QuestionCreate = () => {
   return (
     <ScrollView>
-      <YStack space="$4">
+      <YStack space="$4" marginBottom={20}>
         <Label>Soru Başlığı *</Label>
         <Input placeholder="Örn: Türev'in Tanımı" />
 
@@ -171,7 +171,7 @@ const QuestionCreate = () => {
           ))}
         </XStack>
 
-        <Button mt="$4" theme="active">Soru Oluştur</Button>
+        <Button mt="$4" bg='#D9F87F' color='black' fontWeight='bold' pressStyle={{ bg: '#D9F87F' }}>Soru Oluştur</Button>
       </YStack>
     </ScrollView>
   )
@@ -193,7 +193,7 @@ const PostCreate = () => {
           <Button icon={Camera}>Fotoğraf Çek</Button>
         </XStack>
 
-        <Button mt="$4" theme="active">Post Oluştur</Button>
+        <Button mt="$4" bg='#D9F87F' color='black' fontWeight='bold' pressStyle={{ bg: '#D9F87F' }}>Post Oluştur</Button>
       </YStack>
     </ScrollView>
   )
@@ -216,23 +216,59 @@ export default function MainForum() {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'soru' | 'post' | null>(null);
 
-  // Animation values
+  // Animation values and styles
   const rotation = useSharedValue(0);
   const firstButtonOffset = useSharedValue(0);
   const secondButtonOffset = useSharedValue(0);
   const buttonOpacity = useSharedValue(0);
+  const buttonScale = useSharedValue(0);
 
   const toggleFab = () => {
     const newValue = !isFabOpen;
     setIsFabOpen(newValue);
 
-    // Animate rotation
-    rotation.value = withSpring(newValue ? 1 : 0);
+    rotation.value = withSpring(newValue ? 1 : 0, {
+      damping: 20,
+      stiffness: 100,
+      mass: 0.2
+    });
 
-    // Animate buttons
-    firstButtonOffset.value = withSpring(newValue ? 60 : 0);
-    secondButtonOffset.value = withSpring(newValue ? 120 : 0);
-    buttonOpacity.value = withTiming(newValue ? 1 : 0, { duration: 200 });
+    // Ensure buttons are visible and interactive immediately
+    if (newValue) {
+      buttonOpacity.value = 1;
+      buttonScale.value = withSpring(1, {
+        damping: 20,
+        stiffness: 300,
+        mass: 0.2
+      });
+      firstButtonOffset.value = withSpring(60, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.2
+      });
+      secondButtonOffset.value = withSpring(120, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.2
+      });
+    } else {
+      firstButtonOffset.value = withSpring(0, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.2
+      });
+      secondButtonOffset.value = withSpring(0, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.2
+      });
+      buttonScale.value = withSpring(0, {
+        damping: 20,
+        stiffness: 300,
+        mass: 0.2
+      });
+      buttonOpacity.value = withTiming(0, { duration: 100 });
+    }
   };
 
   const rotationStyle = useAnimatedStyle(() => {
@@ -245,15 +281,25 @@ export default function MainForum() {
 
   const firstButtonStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: -firstButtonOffset.value }],
+      transform: [
+        { translateY: -firstButtonOffset.value },
+        { scale: buttonScale.value }
+      ],
       opacity: buttonOpacity.value,
+      // Ensure button can't be tapped when not visible
+      display: buttonOpacity.value === 0 ? 'none' : 'flex',
     };
   });
 
   const secondButtonStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: -secondButtonOffset.value }],
+      transform: [
+        { translateY: -secondButtonOffset.value },
+        { scale: buttonScale.value }
+      ],
       opacity: buttonOpacity.value,
+      // Ensure button can't be tapped when not visible
+      display: buttonOpacity.value === 0 ? 'none' : 'flex',
     };
   });
 
@@ -303,19 +349,6 @@ export default function MainForum() {
           <Text fontSize="$6" fontWeight="bold">Soru Oluştur</Text>
         </XStack>
         <QuestionCreate />
-
-        {/* Floating Action Button */}
-        <View style={styles.fabContainer}>
-          <Button
-            size="$5"
-            circular
-            bg={'#D9F87F'}
-            onPress={() => setActiveTab(null)}
-            pressStyle={{ bg: '$blue8' }}
-          >
-            <ChevronLeft size={24} color="black" />
-          </Button>
-        </View>
       </YStack>
     );
   }
@@ -333,19 +366,6 @@ export default function MainForum() {
           <Text fontSize="$6" fontWeight="bold">Post Oluştur</Text>
         </XStack>
         <PostCreate />
-
-        {/* Floating Action Button */}
-        <View style={styles.fabContainer}>
-          <Button
-            size="$5"
-            circular
-            bg={'#D9F87F'}
-            onPress={() => setActiveTab(null)}
-            pressStyle={{ bg: '$blue8' }}
-          >
-            <ChevronLeft size={24} color="black" />
-          </Button>
-        </View>
       </YStack>
     );
   }
@@ -430,9 +450,10 @@ export default function MainForum() {
         {/* Action Buttons */}
         <Animated.View style={[styles.fabActionButton, secondButtonStyle]}>
           <Button
-            size="$4"
+            size="$5"
             circular
             bg={'#e1e1e1'}
+            pressStyle={{ opacity: 0.7, bg: '#e1e1e1' }}
             onPress={() => {
               toggleFab();
               setActiveTab('post');
@@ -444,9 +465,10 @@ export default function MainForum() {
 
         <Animated.View style={[styles.fabActionButton, firstButtonStyle]}>
           <Button
-            size="$4"
+            size="$5"
             circular
             bg={'#e1e1e1'}
+            pressStyle={{ opacity: 0.7, bg: '#e1e1e1' }}
             onPress={() => {
               toggleFab();
               setActiveTab('soru');
@@ -462,7 +484,7 @@ export default function MainForum() {
           circular
           bg={'#D9F87F'}
           onPress={toggleFab}
-          pressStyle={{ bg: '$blue8' }}
+          pressStyle={{ opacity: 0.7, bg: '#D9F87F' }}
         >
           <Animated.View style={rotationStyle}>
             <Plus size={24} color="black" />
