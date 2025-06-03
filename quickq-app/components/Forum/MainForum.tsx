@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
-import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView } from 'tamagui';
+import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea } from 'tamagui';
 import {
   MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
-  Plus, FileText, MessageCircleQuestion, Users
+  Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera
 } from '@tamagui/lucide-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 
@@ -122,6 +122,84 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
   );
 };
 
+const QuestionCreate = () => {
+  return (
+    <ScrollView>
+      <YStack space="$4">
+        <Label>Soru Başlığı *</Label>
+        <Input placeholder="Örn: Türev'in Tanımı" />
+
+        <Label>Ders *</Label>
+        <Select defaultValue="Ders Seçiniz">
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item index={0} value="matematik" />
+            <Select.Item index={1} value="fizik" />
+          </Select.Content>
+        </Select>
+
+        <Label>Ünite *</Label>
+        <Select defaultValue="Ünite Seçiniz">
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item index={0} value="ünite1" />
+            <Select.Item index={1} value="ünite2" />
+          </Select.Content>
+        </Select>
+
+        <Label>Cevap</Label>
+        <XStack space="$2" flexWrap="wrap">
+          {['A', 'B', 'C', 'D', 'E'].map(opt => (
+            <Button key={opt} theme={opt === 'A' ? 'active' : 'alt1'}>{opt}</Button>
+          ))}
+        </XStack>
+
+        <Label>Açıklama</Label>
+        <TextArea placeholder="Açıklama giriniz." />
+
+        <Label>Görsel Yükle *</Label>
+        <XStack space="$4">
+          <Button icon={UploadCloud}>Fotoğraf Yükle</Button>
+          <Button icon={Camera}>Fotoğraf Çek</Button>
+        </XStack>
+
+        <Label>Etiket Giriniz</Label>
+        <Input placeholder="Açıklama giriniz." />
+        <XStack space="$2" flexWrap="wrap">
+          {['#ayt', '#fizik', '#tekrar'].map(tag => (
+            <Button size="$2" variant="outlined" key={tag}>{tag}</Button>
+          ))}
+        </XStack>
+
+        <Button mt="$4" theme="active">Soru Oluştur</Button>
+      </YStack>
+    </ScrollView>
+  )
+}
+
+const PostCreate = () => {
+  return (
+    <ScrollView>
+      <YStack space="$4">
+        <Label>Yazı Başlığı *</Label>
+        <Input placeholder="Örn: YKS Motivasyonu" />
+
+        <Label>Açıklama *</Label>
+        <TextArea placeholder="Açıklama giriniz." />
+
+        <Label>Görsel Yükle</Label>
+        <XStack space="$4">
+          <Button icon={UploadCloud}>Fotoğraf Yükle</Button>
+          <Button icon={Camera}>Fotoğraf Çek</Button>
+        </XStack>
+
+        <Button mt="$4" theme="active">Post Oluştur</Button>
+      </YStack>
+    </ScrollView>
+  )
+}
+
+
 interface Question {
   id: number;
   category: string;
@@ -133,9 +211,10 @@ interface Question {
 
 export default function MainForum() {
   const [questionDetail, setQuestionDetail] = useState(false);
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null); // TODO : type
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Question[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'soru' | 'post' | null>(null);
 
   // Animation values
   const rotation = useSharedValue(0);
@@ -211,6 +290,66 @@ export default function MainForum() {
     return bookmarkedQuestions.some(q => q.id === id);
   };
 
+  if (activeTab === 'soru') {
+    return (
+      <YStack f={1} px="$2">
+        <XStack ai="center" mb="$4">
+          <Button
+            icon={ChevronLeft}
+            circular
+            mr="$4"
+            onPress={() => setActiveTab(null)}
+          />
+          <Text fontSize="$6" fontWeight="bold">Soru Oluştur</Text>
+        </XStack>
+        <QuestionCreate />
+
+        {/* Floating Action Button */}
+        <View style={styles.fabContainer}>
+          <Button
+            size="$5"
+            circular
+            bg={'#D9F87F'}
+            onPress={() => setActiveTab(null)}
+            pressStyle={{ bg: '$blue8' }}
+          >
+            <ChevronLeft size={24} color="black" />
+          </Button>
+        </View>
+      </YStack>
+    );
+  }
+
+  if (activeTab === 'post') {
+    return (
+      <YStack f={1} px="$2">
+        <XStack ai="center" mb="$4">
+          <Button
+            icon={ChevronLeft}
+            circular
+            mr="$4"
+            onPress={() => setActiveTab(null)}
+          />
+          <Text fontSize="$6" fontWeight="bold">Post Oluştur</Text>
+        </XStack>
+        <PostCreate />
+
+        {/* Floating Action Button */}
+        <View style={styles.fabContainer}>
+          <Button
+            size="$5"
+            circular
+            bg={'#D9F87F'}
+            onPress={() => setActiveTab(null)}
+            pressStyle={{ bg: '$blue8' }}
+          >
+            <ChevronLeft size={24} color="black" />
+          </Button>
+        </View>
+      </YStack>
+    );
+  }
+
   if (questionDetail && selectedQuestion) {
     return (
       <YStack f={1} px="$2">
@@ -220,8 +359,7 @@ export default function MainForum() {
   }
 
   return (
-    <View style={{ flex: 1, position: 'relative' }}>
-      {/* Main Content */}
+    <View style={{ flex: 1 }}>
       <YStack f={1} px="$2">
         {/* Search bar */}
         <XStack ai="center" jc="space-between" mb="$4">
@@ -287,7 +425,7 @@ export default function MainForum() {
         </ScrollView>
       </YStack>
 
-      {/* Floating Action Button - Fixed position relative to the screen */}
+      {/* Floating Action Button */}
       <View style={styles.fabContainer}>
         {/* Action Buttons */}
         <Animated.View style={[styles.fabActionButton, secondButtonStyle]}>
@@ -297,13 +435,11 @@ export default function MainForum() {
             bg={'#e1e1e1'}
             onPress={() => {
               toggleFab();
-              // TODO: Handle post creation
-              console.log('Create Post');
+              setActiveTab('post');
             }}
           >
             <Users size={18} color="black" />
           </Button>
-
         </Animated.View>
 
         <Animated.View style={[styles.fabActionButton, firstButtonStyle]}>
@@ -313,8 +449,7 @@ export default function MainForum() {
             bg={'#e1e1e1'}
             onPress={() => {
               toggleFab();
-              // TODO: Handle question creation
-              console.log('Create Question');
+              setActiveTab('soru');
             }}
           >
             <MessageCircleQuestion size={18} color="black" />
