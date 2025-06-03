@@ -1,21 +1,17 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
-import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea, Sheet, Adapt, getFontSize, FontSizeTokens } from 'tamagui';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import { View, Pressable, StyleSheet, Image, Alert } from 'react-native';
+import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea, Sheet, Adapt, getFontSize, FontSizeTokens, Spinner } from 'tamagui';
 import {
   MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
-  Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera, Check, ChevronDown, ChevronUp
+  Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera, Check, ChevronDown, ChevronUp,
+  Send, Reply
 } from '@tamagui/lucide-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
+import * as ImagePicker from 'expo-image-picker';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 interface QuestionDetailProps {
-  question: {
-    id: number;
-    category: string;
-    user: string;
-    topic: string;
-    createdAt: string;
-    tags: string[];
-  }
+  question: Question;
   onBackPress: () => void;
 }
 
@@ -44,18 +40,39 @@ const questions = [
     createdAt: '5h',
     tags: ['homojen', 'karışım'],
   },
-];
+] as Question[];
 
 const answers = [
-  { id: 1, user: 'Selin SINDIRAN', timeAgo: '7h', content: 'Paralel bağlı devrelerde...' },
-  { id: 2, user: 'Betül KÜÇÜKKARADUMAN', timeAgo: '5h', content: 'Seri bağlı devreler için...' },
-  { id: 3, user: 'Doğukan İNCE', timeAgo: '3h', content: 'Paralel bağlı devrelerde...' },
-];
+  { id: 1, user: 'Selin SINDIRAN', createdAt: '7h', content: 'Paralel bağlı devrelerde...' },
+  { id: 2, user: 'Betül KÜÇÜKKARADUMAN', createdAt: '5h', content: 'Seri bağlı devreler için...' },
+  { id: 3, user: 'Doğukan İNCE', createdAt: '3h', content: 'Paralel bağlı devrelerde...' },
+] as Reply[];
 
-const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
+interface Question {
+  id: number;
+  category: string;
+  user: string;
+  topic: string;
+  createdAt: string;
+  tags: string[];
+  type?: 'question' | 'post';
+  correctOption?: string;
+  imageUri?: string;
+  replies?: Reply[];
+}
+
+interface Reply {
+  id: number;
+  content: string;
+  user: string;
+  createdAt: string;
+  imageUri?: string;
+}
+
+const QuestionDetail = ({ question, onBackPress, onAddReply }: QuestionDetailProps & { onAddReply: (questionId: number, reply: Partial<Reply>) => void }) => {
   return (
-    <View>
-      <YStack >
+    <View style={{ flex: 1, backgroundColor: "$background" }}>
+      <YStack f={1}>
         {/* Back button */}
         <Button
           icon={ChevronLeft}
@@ -66,8 +83,6 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
       </YStack>
 
       <YStack f={1} p="$4" backgroundColor="$background">
-
-
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Question Section */}
           <YStack space="$3" mb="$6">
@@ -87,6 +102,19 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
               {question.topic}
             </Text>
 
+            {question.imageUri && (
+              <Image
+                source={{ uri: question.imageUri }}
+                style={{
+                  width: '100%',
+                  height: 200,
+                  borderRadius: 8,
+                  resizeMode: 'cover',
+                  marginVertical: 8
+                }}
+              />
+            )}
+
             <XStack gap={4} flexWrap="wrap">
               {question.tags.map((tag, index) => (
                 <Button key={index} size="$2" theme="blue" alignSelf="flex-start">
@@ -98,40 +126,52 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
 
           {/* Answers Section */}
           <YStack space="$5">
-            {answers.map((answer) => (
-              <YStack key={answer.id} space="$2" borderBottomWidth={1} borderColor="$color5" pb="$4">
-                <XStack ai="center" space="$2">
-                  <Avatar circular size="$2" bg="$pink10">
-                    <Avatar.Fallback style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                      <Text>{answer.user.charAt(0)}</Text>
-                    </Avatar.Fallback>
-                  </Avatar>
-                  <Text fontSize="$3">{answer.user}</Text>
-                  <Text fontSize="$2" color="$color9">{answer.timeAgo}</Text>
-                </XStack>
+            {question.replies && question.replies.length > 0 ? (
+              question.replies.map((reply, index) => (
+                <YStack key={index} space="$2" borderBottomWidth={1} borderColor="$color5" pb="$4">
+                  <XStack ai="center" space="$2">
+                    <Avatar circular size="$2" bg="$pink10">
+                      <Avatar.Fallback style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <Text>{reply.user.charAt(0)}</Text>
+                      </Avatar.Fallback>
+                    </Avatar>
+                    <Text fontSize="$3">{reply.user}</Text>
+                    <Text fontSize="$2" color="$color9">{reply.createdAt}</Text>
+                  </XStack>
 
-                <Text fontSize="$4" color="$color10">
-                  {answer.content}
-                </Text>
-              </YStack>
-            ))}
+                  <Text fontSize="$4" color="$color10">
+                    {reply.content}
+                  </Text>
+
+                  {reply.imageUri && (
+                    <Image
+                      source={{ uri: reply.imageUri }}
+                      style={{
+                        width: '100%',
+                        height: 150,
+                        borderRadius: 8,
+                        resizeMode: 'cover',
+                        marginVertical: 8
+                      }}
+                    />
+                  )}
+                </YStack>
+              ))
+            ) : (
+              <Text color="$color9">Henüz yanıt yok. İlk yanıtı sen ver!</Text>
+            )}
           </YStack>
+
+          {/* Reply Component */}
+          <ReplyComponent
+            questionId={question.id}
+            onAddReply={onAddReply}
+          />
         </ScrollView>
       </YStack>
-    </View >
+    </View>
   );
 };
-
-interface Question {
-  id: number;
-  category: string;
-  user: string;
-  topic: string;
-  createdAt: string;
-  tags: string[];
-  type?: 'question' | 'post';
-  correctOption?: string;
-}
 
 const SubjectSelect = ({ value, onValueChange }: { value: string, onValueChange: (val: string) => void }) => {
   const subjects = [
@@ -177,16 +217,10 @@ const SubjectSelect = ({ value, onValueChange }: { value: string, onValueChange:
         </Select.ScrollUpButton>
 
         <Select.Viewport
-          // to do animations:
-          // animation="quick"
-          // animateOnly={['transform', 'opacity']}
-          // enterStyle={{ o: 0, y: -10 }}
-          // exitStyle={{ o: 0, y: 10 }}
           minWidth={200}
         >
           <Select.Group>
             <Select.Label fontWeight={'bold'} color={'#D9F87F'}>Dersler</Select.Label>
-            {/* for longer lists memoizing these is useful */}
             {React.useMemo(
               () =>
                 subjects.map((item, i) => {
@@ -206,7 +240,6 @@ const SubjectSelect = ({ value, onValueChange }: { value: string, onValueChange:
               [subjects]
             )}
           </Select.Group>
-          {/* Native gets an extra icon */}
         </Select.Viewport>
 
         <Select.ScrollDownButton
@@ -233,7 +266,6 @@ const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (v
     { label: "Ünite 4", value: "unite4" }
   ];
 
-  // For handling sheet state
   const [open, setOpen] = useState(false);
 
   return (
@@ -272,16 +304,10 @@ const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (v
         </Select.ScrollUpButton>
 
         <Select.Viewport
-          // to do animations:
-          // animation="quick"
-          // animateOnly={['transform', 'opacity']}
-          // enterStyle={{ o: 0, y: -10 }}
-          // exitStyle={{ o: 0, y: 10 }}
           minWidth={200}
         >
           <Select.Group>
             <Select.Label fontWeight={'bold'} color={'#D9F87F'}>Ünite</Select.Label>
-            {/* for longer lists memoizing these is useful */}
             {React.useMemo(
               () =>
                 units.map((item, i) => {
@@ -301,7 +327,6 @@ const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (v
               [units]
             )}
           </Select.Group>
-          {/* Native gets an extra icon */}
         </Select.Viewport>
 
         <Select.ScrollDownButton
@@ -320,6 +345,156 @@ const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (v
   );
 };
 
+const ImagePickerComponent = ({ onImageSelected }: { onImageSelected: (uri: string) => void }) => {
+  const [loading, setLoading] = useState(false);
+
+  const pickImage = async () => {
+    setLoading(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const manipResult = await manipulateAsync(
+          result.assets[0].uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: SaveFormat.JPEG }
+        );
+        onImageSelected(manipResult.uri);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const takePhoto = async () => {
+    setLoading(true);
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Camera permission is required to take photos');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const manipResult = await manipulateAsync(
+          result.assets[0].uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.7, format: SaveFormat.JPEG }
+        );
+        onImageSelected(manipResult.uri);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to take photo');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <YStack>
+      <Label mb="$2">Görsel Ekle</Label>
+      <XStack space="$4">
+        <Button
+          icon={UploadCloud}
+          onPress={pickImage}
+          disabled={loading}
+        >
+          {loading ? <Spinner /> : 'Galeriden Seç'}
+        </Button>
+        <Button
+          icon={Camera}
+          onPress={takePhoto}
+          disabled={loading}
+        >
+          {loading ? <Spinner /> : 'Fotoğraf Çek'}
+        </Button>
+      </XStack>
+    </YStack>
+  );
+};
+
+const ImagePreview = ({ uri, onRemove }: { uri?: string, onRemove: () => void }) => {
+  if (!uri) return null;
+
+  return (
+    <YStack mt="$2">
+      <XStack justifyContent="space-between" alignItems="center" mb="$2">
+        <Label>Seçilen Görsel</Label>
+        <Button size="$2" theme="red" onPress={onRemove}>Kaldır</Button>
+      </XStack>
+      <Image
+        source={{ uri }}
+        style={{
+          width: '100%',
+          height: 200,
+          borderRadius: 8,
+          resizeMode: 'cover'
+        }}
+      />
+    </YStack>
+  );
+};
+
+const ReplyComponent = ({ questionId, onAddReply }: { questionId: number, onAddReply: (questionId: number, reply: Partial<Reply>) => void }) => {
+  const [replyText, setReplyText] = useState('');
+  const [imageUri, setImageUri] = useState<string | undefined>();
+
+  const handleSubmit = () => {
+    if (!replyText.trim()) {
+      Alert.alert('Uyarı', 'Lütfen bir cevap yazın');
+      return;
+    }
+
+    const newReply: Partial<Reply> = {
+      content: replyText,
+      user: 'Kullanıcı',
+      createdAt: 'Şimdi',
+      imageUri
+    };
+
+    onAddReply(questionId, newReply);
+    setReplyText('');
+    setImageUri(undefined);
+  };
+
+  return (
+    <YStack space="$3" mt="$4" p="$3" borderTopWidth={1} borderColor="$color5">
+      <TextArea
+        placeholder="Cevabınızı yazın..."
+        value={replyText}
+        onChangeText={setReplyText}
+        minHeight={100}
+      />
+      <Button
+        mt="$2"
+        theme="active"
+        bg="#D9F87F"
+        color="black"
+        icon={Send}
+        onPress={handleSubmit}
+        alignSelf="flex-end"
+        disabled={!replyText.trim()}
+      >
+        Gönder
+      </Button>
+    </YStack>
+  );
+};
+
 const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) => void }) => {
   const [title, setTitle] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
@@ -328,6 +503,7 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
   const [tags, setTags] = useState<string[]>(['#ayt', '#fizik', '#tekrar']);
   const [newTag, setNewTag] = useState('');
   const [correctOption, setCorrectOption] = useState<string | null>(null);
+  const [imageUri, setImageUri] = useState<string | undefined>();
 
   const answerOptions = ['A', 'B', 'C', 'D', 'E'];
 
@@ -340,7 +516,7 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
 
   const handleSubmit = () => {
     if (!title.trim()) {
-      alert('Lütfen bir başlık giriniz');
+      Alert.alert('Uyarı', 'Lütfen bir başlık giriniz');
       return;
     }
 
@@ -351,7 +527,9 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
       createdAt: 'Şimdi',
       tags: tags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
       correctOption: correctOption || undefined,
-      type: 'question'
+      imageUri,
+      type: 'question',
+      replies: []
     };
 
     onSubmit(newQuestion);
@@ -401,34 +579,14 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
           onChangeText={setDescription}
         />
 
-        <Label>Görsel Yükle *</Label>
-        <XStack space="$4">
-          <Button icon={UploadCloud}>Fotoğraf Yükle</Button>
-          <Button icon={Camera}>Fotoğraf Çek</Button>
-        </XStack>
+        <ImagePreview
+          uri={imageUri}
+          onRemove={() => setImageUri(undefined)}
+        />
 
-        <Label>Etiket Giriniz</Label>
-        <XStack space="$2" mb="$2">
-          <Input
-            placeholder="Etiket giriniz"
-            value={newTag}
-            onChangeText={setNewTag}
-            width="75%"
-          />
-          <Button onPress={handleAddTag} ml="$2">Ekle</Button>
-        </XStack>
-        <XStack space="$2" flexWrap="wrap">
-          {tags.map(tag => (
-            <Button
-              size="$2"
-              variant="outlined"
-              key={tag}
-              onPress={() => setTags(tags.filter(t => t !== tag))}
-            >
-              {tag} ✕
-            </Button>
-          ))}
-        </XStack>
+        <ImagePickerComponent
+          onImageSelected={(uri) => setImageUri(uri)}
+        />
 
         <Button
           mt="$4"
@@ -511,9 +669,8 @@ export default function MainForum() {
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Question[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'soru' | 'post' | null>(null);
-  const [allQuestions, setAllQuestions] = useState<Question[]>(questions);
+  const [allQuestions, setAllQuestions] = useState<Question[]>(questions.map(q => ({ ...q, replies: [] })));
 
-  // Animation values and styles
   const rotation = useSharedValue(0);
   const firstButtonOffset = useSharedValue(0);
   const secondButtonOffset = useSharedValue(0);
@@ -530,7 +687,6 @@ export default function MainForum() {
       mass: 0.2
     });
 
-    // Ensure buttons are visible and interactive immediately
     if (newValue) {
       buttonOpacity.value = 1;
       buttonScale.value = withSpring(1, {
@@ -583,7 +739,6 @@ export default function MainForum() {
         { scale: buttonScale.value }
       ],
       opacity: buttonOpacity.value,
-      // Ensure button can't be tapped when not visible
       display: buttonOpacity.value === 0 ? 'none' : 'flex',
     };
   });
@@ -595,7 +750,6 @@ export default function MainForum() {
         { scale: buttonScale.value }
       ],
       opacity: buttonOpacity.value,
-      // Ensure button can't be tapped when not visible
       display: buttonOpacity.value === 0 ? 'none' : 'flex',
     };
   });
@@ -614,16 +768,14 @@ export default function MainForum() {
   };
 
   const toggleBookmark = (question: Question, event: any) => {
-    event.stopPropagation(); // Prevent triggering the parent onPress
+    event.stopPropagation();
 
     setBookmarkedQuestions(prev => {
       const isAlreadyBookmarked = prev.some(q => q.id === question.id);
 
       if (isAlreadyBookmarked) {
-        // Remove from bookmarks
         return prev.filter(q => q.id !== question.id);
       } else {
-        // Add to bookmarks
         return [...prev, question];
       }
     });
@@ -633,7 +785,6 @@ export default function MainForum() {
     return bookmarkedQuestions.some(q => q.id === id);
   };
 
-  // Function to add a new question/post
   const handleAddContent = (newContent: Partial<Question>) => {
     const newId = Math.max(0, ...allQuestions.map(q => q.id)) + 1;
     const fullContent = {
@@ -642,8 +793,39 @@ export default function MainForum() {
     } as Question;
 
     setAllQuestions([fullContent, ...allQuestions]);
-    setActiveTab(null); // Return to main view
-    alert(newContent.type === 'post' ? 'Post oluşturuldu!' : 'Soru oluşturuldu!');
+    setActiveTab(null);
+    Alert.alert('Başarılı', newContent.type === 'post' ? 'Post oluşturuldu!' : 'Soru oluşturuldu!');
+  };
+
+  const handleAddReply = (questionId: number, reply: Partial<Reply>) => {
+    setAllQuestions(prevQuestions =>
+      prevQuestions.map(q => {
+        if (q.id === questionId) {
+          const newReplyId = q.replies ? Math.max(0, ...q.replies.map(r => r.id)) + 1 : 1;
+          const newReply = { ...reply, id: newReplyId } as Reply;
+
+          return {
+            ...q,
+            replies: [...(q.replies || []), newReply]
+          };
+        }
+        return q;
+      })
+    );
+
+    if (selectedQuestion && selectedQuestion.id === questionId) {
+      const newReplyId = selectedQuestion.replies
+        ? Math.max(0, ...selectedQuestion.replies.map(r => r.id)) + 1
+        : 1;
+      const newReply = { ...reply, id: newReplyId } as Reply;
+
+      setSelectedQuestion({
+        ...selectedQuestion,
+        replies: [...(selectedQuestion.replies || []), newReply]
+      });
+    }
+
+    Alert.alert('Başarılı', 'Yanıtınız eklendi!');
   };
 
   if (activeTab === 'soru') {
@@ -683,7 +865,11 @@ export default function MainForum() {
   if (questionDetail && selectedQuestion) {
     return (
       <YStack f={1} px="$2">
-        <QuestionDetail question={selectedQuestion} onBackPress={handleBackPress} />
+        <QuestionDetail
+          question={selectedQuestion}
+          onBackPress={handleBackPress}
+          onAddReply={handleAddReply}
+        />
       </YStack>
     );
   }
@@ -691,7 +877,6 @@ export default function MainForum() {
   return (
     <View style={{ flex: 1 }}>
       <YStack f={1} px="$2">
-        {/* Search bar */}
         <XStack ai="center" jc="space-between" mb="$4">
           <Input
             placeholder="Soru ara..."
@@ -700,7 +885,6 @@ export default function MainForum() {
           <Button size="$3" icon={SlidersHorizontal} circular />
         </XStack>
 
-        {/* Scrollable forum posts */}
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 100 }}
@@ -755,9 +939,7 @@ export default function MainForum() {
         </ScrollView>
       </YStack>
 
-      {/* Floating Action Button */}
       <View style={styles.fabContainer}>
-        {/* Action Buttons */}
         <Animated.View style={[styles.fabActionButton, secondButtonStyle]}>
           <Button
             size="$5"
@@ -788,7 +970,6 @@ export default function MainForum() {
           </Button>
         </Animated.View>
 
-        {/* Main FAB */}
         <Button
           size="$5"
           circular
