@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { View, TextInput, Pressable, StyleSheet } from 'react-native';
-import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea } from 'tamagui';
+import React, { useState, useMemo, useCallback } from 'react';
+import { View, Pressable, StyleSheet } from 'react-native';
+import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea, Sheet, Adapt, getFontSize, FontSizeTokens } from 'tamagui';
 import {
   MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
-  Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera
+  Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera, Check, ChevronDown, ChevronUp
 } from '@tamagui/lucide-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 
@@ -122,40 +122,284 @@ const QuestionDetail = ({ question, onBackPress }: QuestionDetailProps) => {
   );
 };
 
-const QuestionCreate = () => {
+interface Question {
+  id: number;
+  category: string;
+  user: string;
+  topic: string;
+  createdAt: string;
+  tags: string[];
+  type?: 'question' | 'post';
+  correctOption?: string;
+}
+
+const SubjectSelect = ({ value, onValueChange }: { value: string, onValueChange: (val: string) => void }) => {
+  const subjects = [
+    { label: "Matematik", value: "matematik" },
+    { label: "Fizik", value: "fizik" },
+    { label: "Kimya", value: "kimya" },
+    { label: "Biyoloji", value: "biyoloji" },
+    { label: "Türkçe", value: "turkce" }
+  ];
+  return (
+    <Select value={value} onValueChange={onValueChange} >
+      <Select.Trigger maxWidth={220} iconAfter={ChevronDown}>
+        <Select.Value placeholder="Ders Seçiniz" />
+      </Select.Trigger>
+
+      <Adapt platform="touch">
+        <Sheet modal dismissOnSnapToBottom animation="medium">
+          <Sheet.Frame>
+            <Sheet.ScrollView>
+              <Adapt.Contents />
+            </Sheet.ScrollView>
+          </Sheet.Frame>
+          <Sheet.Overlay
+            backgroundColor="$shadowColor"
+            animation="lazy"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+        </Sheet>
+      </Adapt>
+
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronUp size={20} />
+          </YStack>
+        </Select.ScrollUpButton>
+
+        <Select.Viewport
+          // to do animations:
+          // animation="quick"
+          // animateOnly={['transform', 'opacity']}
+          // enterStyle={{ o: 0, y: -10 }}
+          // exitStyle={{ o: 0, y: 10 }}
+          minWidth={200}
+        >
+          <Select.Group>
+            <Select.Label fontWeight={'bold'} color={'#D9F87F'}>Dersler</Select.Label>
+            {/* for longer lists memoizing these is useful */}
+            {React.useMemo(
+              () =>
+                subjects.map((item, i) => {
+                  return (
+                    <Select.Item
+                      index={i}
+                      key={item.label}
+                      value={item.value}
+                    >
+                      <Select.ItemText>{item.label}</Select.ItemText>
+                      <Select.ItemIndicator marginLeft="auto">
+                        <Check size={16} />
+                      </Select.ItemIndicator>
+                    </Select.Item>
+                  )
+                }),
+              [subjects]
+            )}
+          </Select.Group>
+          {/* Native gets an extra icon */}
+        </Select.Viewport>
+
+        <Select.ScrollDownButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronDown size={20} />
+          </YStack>
+        </Select.ScrollDownButton>
+      </Select.Content>
+    </Select>
+  );
+};
+
+const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (val: string) => void }) => {
+  const units = [
+    { label: "Ünite 1", value: "unite1" },
+    { label: "Ünite 2", value: "unite2" },
+    { label: "Ünite 3", value: "unite3" },
+    { label: "Ünite 4", value: "unite4" }
+  ];
+
+  // For handling sheet state
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Select value={value} onValueChange={onValueChange} >
+      <Select.Trigger maxWidth={220} iconAfter={ChevronDown}>
+        <Select.Value placeholder="Ünite Seçiniz" />
+      </Select.Trigger>
+
+      <Adapt platform="touch">
+        <Sheet modal dismissOnSnapToBottom animation="medium">
+          <Sheet.Frame>
+            <Sheet.ScrollView>
+              <Adapt.Contents />
+            </Sheet.ScrollView>
+          </Sheet.Frame>
+          <Sheet.Overlay
+            backgroundColor="$shadowColor"
+            animation="lazy"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+        </Sheet>
+      </Adapt>
+
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronUp size={20} />
+          </YStack>
+        </Select.ScrollUpButton>
+
+        <Select.Viewport
+          // to do animations:
+          // animation="quick"
+          // animateOnly={['transform', 'opacity']}
+          // enterStyle={{ o: 0, y: -10 }}
+          // exitStyle={{ o: 0, y: 10 }}
+          minWidth={200}
+        >
+          <Select.Group>
+            <Select.Label fontWeight={'bold'} color={'#D9F87F'}>Ünite</Select.Label>
+            {/* for longer lists memoizing these is useful */}
+            {React.useMemo(
+              () =>
+                units.map((item, i) => {
+                  return (
+                    <Select.Item
+                      index={i}
+                      key={item.label}
+                      value={item.value}
+                    >
+                      <Select.ItemText>{item.label}</Select.ItemText>
+                      <Select.ItemIndicator marginLeft="auto">
+                        <Check size={16} />
+                      </Select.ItemIndicator>
+                    </Select.Item>
+                  )
+                }),
+              [units]
+            )}
+          </Select.Group>
+          {/* Native gets an extra icon */}
+        </Select.Viewport>
+
+        <Select.ScrollDownButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronDown size={20} />
+          </YStack>
+        </Select.ScrollDownButton>
+      </Select.Content>
+    </Select>
+  );
+};
+
+const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) => void }) => {
+  const [title, setTitle] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
+  const [description, setDescription] = useState('');
+  const [tags, setTags] = useState<string[]>(['#ayt', '#fizik', '#tekrar']);
+  const [newTag, setNewTag] = useState('');
+  const [correctOption, setCorrectOption] = useState<string | null>(null);
+
+  const answerOptions = ['A', 'B', 'C', 'D', 'E'];
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      alert('Lütfen bir başlık giriniz');
+      return;
+    }
+
+    const newQuestion: Partial<Question> = {
+      category: title,
+      user: 'Kullanıcı',
+      topic: description || 'Açıklama yok',
+      createdAt: 'Şimdi',
+      tags: tags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
+      correctOption: correctOption || undefined,
+      type: 'question'
+    };
+
+    onSubmit(newQuestion);
+  };
+
   return (
     <ScrollView>
       <YStack space="$4" marginBottom={20}>
         <Label>Soru Başlığı *</Label>
-        <Input placeholder="Örn: Türev'in Tanımı" />
+        <Input
+          placeholder="Örn: Türev'in Tanımı"
+          value={title}
+          onChangeText={setTitle}
+        />
 
         <Label>Ders *</Label>
-        <Select defaultValue="Ders Seçiniz">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item index={0} value="matematik" />
-            <Select.Item index={1} value="fizik" />
-          </Select.Content>
-        </Select>
+        <SubjectSelect
+          value={selectedClass}
+          onValueChange={setSelectedClass}
+        />
 
         <Label>Ünite *</Label>
-        <Select defaultValue="Ünite Seçiniz">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item index={0} value="ünite1" />
-            <Select.Item index={1} value="ünite2" />
-          </Select.Content>
-        </Select>
+        <UnitSelect
+          value={selectedUnit}
+          onValueChange={setSelectedUnit}
+        />
 
         <Label>Cevap</Label>
         <XStack space="$2" flexWrap="wrap">
-          {['A', 'B', 'C', 'D', 'E'].map(opt => (
-            <Button key={opt} theme={opt === 'A' ? 'active' : 'alt1'}>{opt}</Button>
+          {answerOptions.map(opt => (
+            <Button
+              key={opt}
+              bg={correctOption === opt ? '#D9F87F' : undefined}
+              color={correctOption === opt ? 'black' : undefined}
+              fontWeight={correctOption === opt ? 'bold' : undefined}
+              onPress={() => setCorrectOption(opt)}
+            >
+              {opt}
+            </Button>
           ))}
         </XStack>
 
         <Label>Açıklama</Label>
-        <TextArea placeholder="Açıklama giriniz." />
+        <TextArea
+          placeholder="Açıklama giriniz."
+          value={description}
+          onChangeText={setDescription}
+        />
 
         <Label>Görsel Yükle *</Label>
         <XStack space="$4">
@@ -164,28 +408,81 @@ const QuestionCreate = () => {
         </XStack>
 
         <Label>Etiket Giriniz</Label>
-        <Input placeholder="Açıklama giriniz." />
+        <XStack space="$2" mb="$2">
+          <Input
+            placeholder="Etiket giriniz"
+            value={newTag}
+            onChangeText={setNewTag}
+            width="75%"
+          />
+          <Button onPress={handleAddTag} ml="$2">Ekle</Button>
+        </XStack>
         <XStack space="$2" flexWrap="wrap">
-          {['#ayt', '#fizik', '#tekrar'].map(tag => (
-            <Button size="$2" variant="outlined" key={tag}>{tag}</Button>
+          {tags.map(tag => (
+            <Button
+              size="$2"
+              variant="outlined"
+              key={tag}
+              onPress={() => setTags(tags.filter(t => t !== tag))}
+            >
+              {tag} ✕
+            </Button>
           ))}
         </XStack>
 
-        <Button mt="$4" bg='#D9F87F' color='black' fontWeight='bold' pressStyle={{ bg: '#D9F87F' }}>Soru Oluştur</Button>
+        <Button
+          mt="$4"
+          bg='#D9F87F'
+          color='black'
+          fontWeight='bold'
+          pressStyle={{ bg: '#D9F87F', opacity: 0.7 }}
+          onPress={handleSubmit}
+        >
+          Soru Oluştur
+        </Button>
       </YStack>
     </ScrollView>
-  )
+  );
 }
 
-const PostCreate = () => {
+const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void }) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      alert('Lütfen bir başlık giriniz');
+      return;
+    }
+
+    const newPost: Partial<Question> = {
+      category: title,
+      user: 'Kullanıcı',
+      topic: description || 'Açıklama yok',
+      createdAt: 'Şimdi',
+      tags: ['post'],
+      type: 'post'
+    };
+
+    onSubmit(newPost);
+  };
+
   return (
     <ScrollView>
-      <YStack space="$4">
+      <YStack space="$4" marginBottom={20}>
         <Label>Yazı Başlığı *</Label>
-        <Input placeholder="Örn: YKS Motivasyonu" />
+        <Input
+          placeholder="Örn: YKS Motivasyonu"
+          value={title}
+          onChangeText={setTitle}
+        />
 
         <Label>Açıklama *</Label>
-        <TextArea placeholder="Açıklama giriniz." />
+        <TextArea
+          placeholder="Açıklama giriniz."
+          value={description}
+          onChangeText={setDescription}
+        />
 
         <Label>Görsel Yükle</Label>
         <XStack space="$4">
@@ -193,20 +490,19 @@ const PostCreate = () => {
           <Button icon={Camera}>Fotoğraf Çek</Button>
         </XStack>
 
-        <Button mt="$4" bg='#D9F87F' color='black' fontWeight='bold' pressStyle={{ bg: '#D9F87F' }}>Post Oluştur</Button>
+        <Button
+          mt="$4"
+          bg='#D9F87F'
+          color='black'
+          fontWeight='bold'
+          pressStyle={{ bg: '#D9F87F', opacity: 0.7 }}
+          onPress={handleSubmit}
+        >
+          Post Oluştur
+        </Button>
       </YStack>
     </ScrollView>
-  )
-}
-
-
-interface Question {
-  id: number;
-  category: string;
-  user: string;
-  topic: string;
-  createdAt: string;
-  tags: string[];
+  );
 }
 
 export default function MainForum() {
@@ -215,6 +511,7 @@ export default function MainForum() {
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Question[]>([]);
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'soru' | 'post' | null>(null);
+  const [allQuestions, setAllQuestions] = useState<Question[]>(questions);
 
   // Animation values and styles
   const rotation = useSharedValue(0);
@@ -304,7 +601,7 @@ export default function MainForum() {
   });
 
   const handleQuestionPress = (id: number) => {
-    const foundQuestion = questions.find(q => q.id === id);
+    const foundQuestion = allQuestions.find(q => q.id === id);
     if (foundQuestion) {
       setSelectedQuestion(foundQuestion);
       setQuestionDetail(true);
@@ -336,6 +633,19 @@ export default function MainForum() {
     return bookmarkedQuestions.some(q => q.id === id);
   };
 
+  // Function to add a new question/post
+  const handleAddContent = (newContent: Partial<Question>) => {
+    const newId = Math.max(0, ...allQuestions.map(q => q.id)) + 1;
+    const fullContent = {
+      ...newContent,
+      id: newId
+    } as Question;
+
+    setAllQuestions([fullContent, ...allQuestions]);
+    setActiveTab(null); // Return to main view
+    alert(newContent.type === 'post' ? 'Post oluşturuldu!' : 'Soru oluşturuldu!');
+  };
+
   if (activeTab === 'soru') {
     return (
       <YStack f={1} px="$2">
@@ -348,7 +658,7 @@ export default function MainForum() {
           />
           <Text fontSize="$6" fontWeight="bold">Soru Oluştur</Text>
         </XStack>
-        <QuestionCreate />
+        <QuestionCreate onSubmit={handleAddContent} />
       </YStack>
     );
   }
@@ -365,7 +675,7 @@ export default function MainForum() {
           />
           <Text fontSize="$6" fontWeight="bold">Post Oluştur</Text>
         </XStack>
-        <PostCreate />
+        <PostCreate onSubmit={handleAddContent} />
       </YStack>
     );
   }
@@ -397,7 +707,7 @@ export default function MainForum() {
           showsVerticalScrollIndicator={false}
         >
           <YStack space="$4">
-            {questions.map((q) => (
+            {allQuestions.map((q) => (
               <Pressable key={q.id} onPress={() => handleQuestionPress(q.id)}>
                 <Card padding="$3" elevate bordered>
                   <YStack space={2}>
