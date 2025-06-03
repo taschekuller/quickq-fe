@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { View, TextInput, Pressable, StyleSheet } from 'react-native';
 import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView } from 'tamagui';
 import {
-  MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck
-
+  MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
+  Plus, FileText, MessageCircleQuestion, Users
 } from '@tamagui/lucide-icons';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 
 interface QuestionDetailProps {
   question: {
@@ -37,14 +38,6 @@ const questions = [
   },
   {
     id: 3,
-    category: 'Cümlede Anlam',
-    user: 'Memoş',
-    topic: 'Bir elektrik devresinde ampulün parlaklığını artırmak istiyoruz...',
-    createdAt: '4h',
-    tags: ['cümle'],
-  },
-  {
-    id: 4,
     category: 'Homojen Karışım',
     user: 'Betül',
     topic: 'Bir elektrik devresinde ampulün parlaklığını artırmak istiyoruz...',
@@ -142,6 +135,48 @@ export default function MainForum() {
   const [questionDetail, setQuestionDetail] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null); // TODO : type
   const [bookmarkedQuestions, setBookmarkedQuestions] = useState<Question[]>([]);
+  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  // Animation values
+  const rotation = useSharedValue(0);
+  const firstButtonOffset = useSharedValue(0);
+  const secondButtonOffset = useSharedValue(0);
+  const buttonOpacity = useSharedValue(0);
+
+  const toggleFab = () => {
+    const newValue = !isFabOpen;
+    setIsFabOpen(newValue);
+
+    // Animate rotation
+    rotation.value = withSpring(newValue ? 1 : 0);
+
+    // Animate buttons
+    firstButtonOffset.value = withSpring(newValue ? 60 : 0);
+    secondButtonOffset.value = withSpring(newValue ? 120 : 0);
+    buttonOpacity.value = withTiming(newValue ? 1 : 0, { duration: 200 });
+  };
+
+  const rotationStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { rotate: `${rotation.value * 45}deg` }
+      ],
+    };
+  });
+
+  const firstButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: -firstButtonOffset.value }],
+      opacity: buttonOpacity.value,
+    };
+  });
+
+  const secondButtonStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: -secondButtonOffset.value }],
+      opacity: buttonOpacity.value,
+    };
+  });
 
   const handleQuestionPress = (id: number) => {
     const foundQuestion = questions.find(q => q.id === id);
@@ -176,73 +211,130 @@ export default function MainForum() {
     return bookmarkedQuestions.some(q => q.id === id);
   };
 
-  return (
-    <YStack f={1} px="$2">
-      {questionDetail && selectedQuestion ? (
+  if (questionDetail && selectedQuestion) {
+    return (
+      <YStack f={1} px="$2">
         <QuestionDetail question={selectedQuestion} onBackPress={handleBackPress} />
-      ) : (
-        <View>
-          {/* Search bar */}
-          <XStack ai="center" jc="space-between" mb="$4">
-            <Input
-              placeholder="Soru ara..."
-              width="85%"
-            />
-            <Button size="$3" icon={SlidersHorizontal} circular />
-          </XStack>
+      </YStack>
+    );
+  }
 
-          {/* Scrollable forum posts */}
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <YStack space="$4">
-              {questions.map((q) => (
-                <Pressable key={q.id} onPress={() => handleQuestionPress(q.id)}>
-                  <Card padding="$4" elevate bordered>
-                    <YStack space={2}>
-                      <YStack space="$1" style={styles.questionHeader}>
-                        <Text fontWeight="bold" fontSize="$6">{q.category}</Text>
-                        <Text color="$color9" fontSize="$4">{q.createdAt}</Text>
-                      </YStack>
-                      <XStack ai="center" mt={5} gap={5}>
-                        <Avatar circular size="$2" bg="$purple10">
-                          <Avatar.Fallback style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <Text>{q.user.charAt(0)}</Text>
-                          </Avatar.Fallback>
-                        </Avatar>
-                        <Text fontSize="$3">{q.user}</Text>
-                      </XStack>
-                      <Text numberOfLines={2} mt={2} color="$color9">
-                        {q.topic}
-                      </Text>
-                      <XStack mt={5} gap={5} justifyContent="space-between" alignItems="center">
-                        <XStack>
-                          <Button circular scaleIcon={1.5} icon={MessageCircleMore} onPress={() => handleQuestionPress(q.id)} />
-                          <Button
-                            circular
-                            scaleIcon={1.5}
-                            icon={isBookmarked(q.id) ? BookmarkCheck : Bookmark}
-                            color={isBookmarked(q.id) ? '#D9F87F' : 'white'}
-                            onPress={(e) => toggleBookmark(q, e)}
-                          />
-                        </XStack>
-                        <XStack gap={2}>
-                          {q.tags.map((tag, index) => (
-                            <Button radiused key={index} size="$1" theme="blue" mt={6} alignSelf="flex-start">
-                              <Text>
-                                {`#${tag}`}
-                              </Text>
-                            </Button>
-                          ))}
-                        </XStack>
-                      </XStack>
+  return (
+    <View style={{ flex: 1, position: 'relative' }}>
+      {/* Main Content */}
+      <YStack f={1} px="$2">
+        {/* Search bar */}
+        <XStack ai="center" jc="space-between" mb="$4">
+          <Input
+            placeholder="Soru ara..."
+            width="85%"
+          />
+          <Button size="$3" icon={SlidersHorizontal} circular />
+        </XStack>
+
+        {/* Scrollable forum posts */}
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <YStack space="$4">
+            {questions.map((q) => (
+              <Pressable key={q.id} onPress={() => handleQuestionPress(q.id)}>
+                <Card padding="$3" elevate bordered>
+                  <YStack space={2}>
+                    <YStack space="$1" style={styles.questionHeader}>
+                      <Text fontWeight="bold" fontSize="$6">{q.category}</Text>
+                      <Text color="$color9" fontSize="$4">{q.createdAt}</Text>
                     </YStack>
-                  </Card>
-                </Pressable>
-              ))}
-            </YStack>
-          </ScrollView>
-        </View>
-      )}
-    </YStack>
+                    <XStack ai="center" mt={5} gap={5}>
+                      <Avatar circular size="$2" bg="$purple10">
+                        <Avatar.Fallback style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                          <Text>{q.user.charAt(0)}</Text>
+                        </Avatar.Fallback>
+                      </Avatar>
+                      <Text fontSize="$3">{q.user}</Text>
+                    </XStack>
+                    <Text numberOfLines={2} mt={2} color="$color9">
+                      {q.topic}
+                    </Text>
+                    <XStack mt={5} gap={5} justifyContent="space-between" alignItems="center">
+                      <XStack>
+                        <Button circular scaleIcon={1.5} icon={MessageCircleMore} onPress={() => handleQuestionPress(q.id)} />
+                        <Button
+                          circular
+                          scaleIcon={1.5}
+                          icon={isBookmarked(q.id) ? BookmarkCheck : Bookmark}
+                          color={isBookmarked(q.id) ? '#D9F87F' : 'white'}
+                          onPress={(e) => toggleBookmark(q, e)}
+                        />
+                      </XStack>
+                      <XStack gap={2}>
+                        {q.tags.map((tag, index) => (
+                          <Button radiused key={index} size="$1" theme="blue" mt={6} alignSelf="flex-start">
+                            <Text>
+                              {`#${tag}`}
+                            </Text>
+                          </Button>
+                        ))}
+                      </XStack>
+                    </XStack>
+                  </YStack>
+                </Card>
+              </Pressable>
+            ))}
+          </YStack>
+        </ScrollView>
+      </YStack>
+
+      {/* Floating Action Button - Fixed position relative to the screen */}
+      <View style={styles.fabContainer}>
+        {/* Action Buttons */}
+        <Animated.View style={[styles.fabActionButton, secondButtonStyle]}>
+          <Button
+            size="$4"
+            circular
+            bg={'#e1e1e1'}
+            onPress={() => {
+              toggleFab();
+              // TODO: Handle post creation
+              console.log('Create Post');
+            }}
+          >
+            <Users size={18} color="black" />
+          </Button>
+
+        </Animated.View>
+
+        <Animated.View style={[styles.fabActionButton, firstButtonStyle]}>
+          <Button
+            size="$4"
+            circular
+            bg={'#e1e1e1'}
+            onPress={() => {
+              toggleFab();
+              // TODO: Handle question creation
+              console.log('Create Question');
+            }}
+          >
+            <MessageCircleQuestion size={18} color="black" />
+          </Button>
+        </Animated.View>
+
+        {/* Main FAB */}
+        <Button
+          size="$5"
+          circular
+          bg={'#D9F87F'}
+          onPress={toggleFab}
+          pressStyle={{ bg: '$blue8' }}
+        >
+          <Animated.View style={rotationStyle}>
+            <Plus size={24} color="black" />
+          </Animated.View>
+        </Button>
+      </View>
+    </View>
   );
 }
 
@@ -252,5 +344,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  fabActionButton: {
+    position: 'absolute',
+    bottom: 0,
+    alignItems: 'flex-end',
   }
 });
