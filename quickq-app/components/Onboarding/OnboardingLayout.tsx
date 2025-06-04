@@ -105,7 +105,7 @@ const OnboardingLayout = () => {
                             <Pressable
                                 onPress={() => {
                                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-                                    router.push('/register')
+                                    router.push('/login')
                                 }}>
                                 <Text style={styles.loginHighlight}>
                                     Giriş Yap

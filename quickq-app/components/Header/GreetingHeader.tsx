@@ -18,23 +18,6 @@ export function GreetingHeader({ name }: { name: string }) {
           Merhaba, <Text style={{ fontWeight: 700 }} color="#e1e1e1">{name}</Text>
         </Text>
       </XStack>
-
-      <View
-        w={30}
-        h={30}
-        ai="center"
-        jc="center"
-        br="$3"
-      >
-        <Button
-          circular
-          
-          scaleIcon={1.5}
-          icon={Search}
-          color={"#e1e1e1"}
-          style={{ marginBottom: 10, backgroundColor: "none" }}
-        />
-      </View>
     </XStack>
   )
 }
