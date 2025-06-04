@@ -69,6 +69,7 @@ const LoginScreen = () => {
             height={50}
             placeholder="Email"
             placeholderTextColor="gray"
+            style={{ color: 'black' }}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -85,6 +86,7 @@ const LoginScreen = () => {
             height={50}
             placeholder="Password"
             placeholderTextColor="gray"
+            style={{ color: 'black' }}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -94,7 +96,7 @@ const LoginScreen = () => {
         </XStack>
 
         <Button onPress={handleLogin} style={styles.loginButton} theme="active" borderRadius={36}>
-          <Text style={{ fontSize: 18, fontWeight: '700' }}>Giriş Yap</Text>
+          <Text style={{ fontSize: 18, fontWeight: '700', color: 'black' }}>Giriş Yap</Text>
         </Button>
 
         <TouchableOpacity>

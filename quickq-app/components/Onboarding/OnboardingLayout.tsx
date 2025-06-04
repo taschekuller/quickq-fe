@@ -5,6 +5,8 @@ import { onBoardingSlides } from '../../configs/constants';
 import { Redirect, router } from 'expo-router';
 import { ArrowLeft, ArrowRight } from '@tamagui/lucide-icons'
 import { Button } from "tamagui";
+import commonStyles from '../../styles/style';
+import * as Haptics from 'expo-haptics';
 
 
 
@@ -66,23 +68,30 @@ const OnboardingLayout = () => {
             <View style={{ ...styles.buttonContainer, justifyContent: currentIndex > 0 ? 'space-between' : 'center' }}>
                 {(currentIndex > 0 && currentIndex < onBoardingSlides.length - 1) &&
                     <View style={styles.prevBtn}>
-                        <Button icon={ArrowLeft} style={styles.buttonIcons} color="#d9f87f" scaleIcon={2} onPress={() => {
+                        <Button icon={ArrowLeft} pressStyle={commonStyles.buttonActiveBorderless} style={styles.buttonIcons} color="#d9f87f" scaleIcon={2} onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                             handlePrevSlide()
-                        }} />
+                        }}></Button>
                     </View>}
 
                 {(currentIndex < onBoardingSlides.length - 1) &&
                     <View style={styles.nextBtn}>
-                        <Button icon={ArrowRight} style={styles.buttonIcons} scaleIcon={2} onPress={() => {
+                        <Button pressStyle={commonStyles.buttonActiveBorderless} style={styles.buttonIcons} scaleIcon={2} onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
                             handleNextSlide()
-                        }} />
+                        }}>
+                            <ArrowRight color={'black'} />
+                        </Button>
                     </View>}
 
                 {(currentIndex == onBoardingSlides.length - 1) &&
                     <View style={styles.registerContainer}>
                         <Button
                             style={styles.registerButton}
-                            onPress={() => router.push('/register')}>
+                            onPress={() => {
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                                router.push('/register')
+                            }}>
                             <Text style={styles.registerText}>
                                 Hesap Oluştur
                             </Text>
@@ -94,7 +103,10 @@ const OnboardingLayout = () => {
                             </Text>
 
                             <Pressable
-                                onPress={() => router.push('/register')}>
+                                onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                                    router.push('/login')
+                                }}>
                                 <Text style={styles.loginHighlight}>
                                     Giriş Yap
                                 </Text>
@@ -103,7 +115,7 @@ const OnboardingLayout = () => {
 
                     </View>
                 }
-            </View>
+            </View >
 
         )
     }
@@ -154,7 +166,6 @@ const styles = StyleSheet.create({
     },
     buttonIcons: {
         backgroundColor: 'transparent',
-        color: 'black',
     },
     registerContainer: {
         display: "flex",

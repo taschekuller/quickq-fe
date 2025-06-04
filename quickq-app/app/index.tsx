@@ -16,7 +16,7 @@ export default function index() {
 
     return (
         <>
-            <Redirect href={!loggedInUser ? '/onboarding' : '/(app)/(tabs)/(home)'} />
+            <Redirect href={!loggedInUser ? '/onboarding' : '/(app)/tabs/(home)'} />
         </>
     )
 }

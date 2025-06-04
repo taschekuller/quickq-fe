@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView } from 'react-native';
 import { Button, Input, Text, XStack, YStack } from 'tamagui';
 import { Mail, Lock, LogIn } from '@tamagui/lucide-icons';
 import { useRouter } from 'expo-router';
@@ -10,8 +10,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 WebBrowser.maybeCompleteAuthSession();
 const RegisterScreen = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const router = useRouter();
 
   // Google authentication setup
@@ -54,99 +56,107 @@ const RegisterScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Hoşgeldiniz</Text>
-        <Text style={styles.subHeaderText}>QuickQ</Text>
-      </View>
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Hoşgeldiniz</Text>
+          <Text style={styles.subHeaderText}>QuickQ</Text>
+        </View>
 
-      <View style={styles.formContainer}>
-        <XStack alignItems="center" style={styles.inputContainer}>
-          <Ionicons name="person-circle-outline" size={24} color="gray" />
-          <Input
-            flex={1}
-            height={50}
-            placeholder="İsim Soyisim"
-            placeholderTextColor="gray"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            borderWidth={0}
-            backgroundColor={'transparent'}
-          />
-        </XStack>
-        <XStack alignItems="center" style={styles.inputContainer}>
-          <Mail size={20} color="gray" />
-          <Input
-            flex={1}
-            height={50}
-            placeholder="Email"
-            placeholderTextColor="gray"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            borderWidth={0}
-            backgroundColor={'transparent'}
-          />
-        </XStack>
+        <View style={styles.formContainer}>
+          <XStack alignItems="center" style={styles.inputContainer}>
+            <Ionicons name="person-circle-outline" size={24} color="gray" />
+            <Input
+              flex={1}
+              height={50}
+              placeholder="İsim Soyisim"
+              placeholderTextColor="gray"
+              style={{ color: 'black' }}
+              value={name}
+              onChangeText={setName}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              borderWidth={0}
+              backgroundColor={'transparent'}
+            />
+          </XStack>
+          <XStack alignItems="center" style={styles.inputContainer}>
+            <Mail size={20} color="gray" />
+            <Input
+              flex={1}
+              height={50}
+              placeholder="Email"
+              placeholderTextColor="gray"
+              style={{ color: 'black' }}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              borderWidth={0}
+              backgroundColor={'transparent'}
+            />
+          </XStack>
 
-        <XStack alignItems="center" style={styles.inputContainer}>
-          <Lock size={20} color="gray" />
-          <Input
-            flex={1}
-            height={50}
-            placeholder="Password"
-            placeholderTextColor="gray"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            borderWidth={0}
-            backgroundColor={'transparent'}
-          />
-        </XStack>
+          <XStack alignItems="center" style={styles.inputContainer}>
+            <Lock size={20} color="gray" />
+            <Input
+              flex={1}
+              height={50}
+              placeholder="Password"
+              placeholderTextColor="gray"
+              style={{ color: 'black' }}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              borderWidth={0}
+              backgroundColor={'transparent'}
+            />
+          </XStack>
 
-        <XStack alignItems="center" style={styles.inputContainer}>
-          <Lock size={20} color="gray" />
-          <Input
-            flex={1}
-            height={50}
-            placeholder="Password"
-            placeholderTextColor="gray"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            borderWidth={0}
-            backgroundColor={'transparent'}
-          />
-        </XStack>
+          <XStack alignItems="center" style={styles.inputContainer}>
+            <Lock size={20} color="gray" />
+            <Input
+              flex={1}
+              height={50}
+              placeholder="Password"
+              placeholderTextColor="gray"
+              style={{ color: 'black' }}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              borderWidth={0}
+              backgroundColor={'transparent'}
+            />
+          </XStack>
 
-        <Button onPress={handleLogin} style={styles.loginButton} theme="active" borderRadius={36}>
-          <Text style={{ fontSize: 18, fontWeight: '700' }}>Hesap Oluştur</Text>
-        </Button>
+          <Button onPress={handleLogin} style={styles.loginButton} theme="active" borderRadius={36}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: 'black' }}>Hesap Oluştur</Text>
+          </Button>
 
-        <TouchableOpacity onPress={() => router.push('/login')}>
-          <Text style={styles.signUpLink}>Hesabın var mı, Giriş Yap.</Text>
-        </TouchableOpacity>
-
-        <YStack style={{ bottom: 0, position: 'absolute', width: '100%', marginBottom: 20, alignItems: 'center' }}>
-          <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
-            Devam ederek QuickQ'nun
-          </Text>
-          <TouchableOpacity>
-            <Text style={{ color: '#CBD9E6', fontWeight: 'bold', fontSize: 14 }}>
-              Gizlilik Politikası ve Hizmet Şartları'nı
-            </Text>
+          <TouchableOpacity onPress={() => router.push('/login')}>
+            <Text style={styles.signUpLink}>Hesabın var mı, Giriş Yap.</Text>
           </TouchableOpacity>
-          <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
-            kabul etmiş olursunuz.
-          </Text>
-        </YStack>
+
+          <YStack style={{ bottom: 0, position: 'absolute', width: '100%', marginBottom: 20, alignItems: 'center', marginHorizontal: 20 }}>
+            <View style={{ display: 'flex', alignItems: 'center', marginTop: 16, marginBottom: 8 }}>
+              <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
+                Devam ederek QuickQ'nun
+              </Text>
+              <TouchableOpacity>
+                <Text style={{ color: '#CBD9E6', fontWeight: 'bold', fontSize: 14 }}>
+                  Gizlilik Politikası ve Hizmet Şartları'nı
+                </Text>
+              </TouchableOpacity>
+              <Text style={{ color: '#B1B8BE', fontSize: 14 }}>
+                kabul etmiş olursunuz.
+              </Text>
+            </View>
+          </YStack>
 
 
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
