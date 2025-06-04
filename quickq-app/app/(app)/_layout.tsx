@@ -2,6 +2,8 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { Ionicons } from '@expo/vector-icons';
+import { Home } from '@tamagui/lucide-icons'
+
 
 interface DrawerIconProps {
   name: keyof typeof Ionicons.glyphMap;
@@ -29,6 +31,13 @@ export default function AppLayout() {
         }
         }
       >
+        <Drawer.Screen
+          name="tabs"
+          options={{
+            drawerLabel: 'Home',
+            drawerIcon: ({ size, color }) => <Home size={size} color={color} />,
+          }}
+        />
         <Drawer.Screen
           name="settings"
           options={{

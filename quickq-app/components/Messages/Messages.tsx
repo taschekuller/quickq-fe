@@ -1,7 +1,10 @@
 import { useState } from 'react'
-import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView } from 'react-native'
-import { Button, Card, Text, XStack, YStack, Avatar, Input } from 'tamagui'
-import { ArrowLeft, Heart, Search, X, CheckCircle, Camera, ArrowRight } from '@tamagui/lucide-icons'
+import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView, Alert, TouchableOpacity, StyleSheet } from 'react-native'
+import { Button, Card, Text, XStack, YStack, Avatar, Input, AlertDialog } from 'tamagui'
+import { ArrowLeft, Heart, Search, X, CheckCircle, Camera, ArrowRight, Image as ImageIcon } from '@tamagui/lucide-icons'
+import * as ImagePicker from 'expo-image-picker'
+import { Swipeable } from 'react-native-gesture-handler'
+
 interface Message {
   id: string
   name: string
@@ -9,6 +12,7 @@ interface Message {
   time: string
   unreadCount?: number
   avatar: string
+  read?: boolean
 }
 
 interface ChatMessage {
@@ -26,28 +30,32 @@ const messagesData: Message[] = [
     lastMessage: 'Görseldeki işlem adımlarını...',
     time: '18:31',
     unreadCount: 5,
-    avatar: 'https://i.pravatar.cc/150?img=1',
+    avatar: require("../../assets/images/person1.png"),
+    read: false,
   },
   {
     id: '2',
     name: 'Doğukan İnce',
     lastMessage: 'Evet, benzer bir yöntem olarak...',
     time: '16:34',
-    avatar: 'https://i.pravatar.cc/150?img=2',
+    avatar: require("../../assets/images/person2.png"),
+    read: true,
   },
   {
     id: '3',
     name: 'Memoş',
     lastMessage: 'Rica ederim, başarılar dilerim.',
     time: 'Yesterday',
-    avatar: 'https://i.pravatar.cc/150?img=3',
+    avatar: require("../../assets/images/person3.png"),
+    read: true,
   },
   {
     id: '4',
     name: 'Betül Küçükkaraduman',
     lastMessage: 'Merhaba, fizik soruyla ilgili...',
     time: '2d',
-    avatar: 'https://i.pravatar.cc/150?img=4',
+    avatar: require("../../assets/images/person4.png"),
+    read: true,
   },
 ]
 
@@ -77,6 +85,118 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState<Message | null>(null)
   const [searchActive, setSearchActive] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const [messageText, setMessageText] = useState('')
+  const [messages, setMessages] = useState<ChatMessage[]>(chatData)
+  const [showImageOptions, setShowImageOptions] = useState(false)
+  const [messagesList, setMessagesList] = useState<Message[]>(messagesData)
+  const [checkSelected, setCheckSelected] = useState(false)
+  const [heartSelected, setHeartSelected] = useState(false)
+
+  // Mark message as read
+  const markAsRead = (id: string) => {
+    setMessagesList(
+      messagesList.map(message =>
+        message.id === id ? { ...message, read: true, unreadCount: undefined } : message
+      )
+    );
+  };
+
+  // Mark message as unread
+  const markAsUnread = (id: string) => {
+    setMessagesList(
+      messagesList.map(message =>
+        message.id === id ? { ...message, read: false, unreadCount: message.unreadCount || 1 } : message
+      )
+    );
+  };
+
+  const renderRightActions = (id: string) => {
+    return (
+      <TouchableOpacity
+        style={[styles.swipeAction, { backgroundColor: '#4CAF50', height: 70, borderRadius: 10 }]}
+        onPress={() => markAsRead(id)}
+      >
+        <Text style={styles.swipeActionText}>Okundu</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderLeftActions = (id: string) => {
+    return (
+      <TouchableOpacity
+        style={[styles.swipeAction, { backgroundColor: '#2196F3', height: 70, borderRadius: 10 }]}
+        onPress={() => markAsUnread(id)}
+      >
+        <Text style={styles.swipeActionText}>Okunmadı</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  // Filter messages by sender name
+  const filteredMessages = searchText.trim() === ''
+    ? messagesList
+    : messagesList.filter(message =>
+      message.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+  const handleSendMessage = () => {
+    if (messageText.trim() === '') return;
+
+    const newMessage: ChatMessage = {
+      id: (messages.length + 1).toString(),
+      sender: 'me',
+      text: messageText,
+      time: new Date().toLocaleTimeString().slice(0, 5),
+    };
+
+    setMessages([...messages, newMessage]);
+    setMessageText('');
+  };
+
+  const handleImageSelection = async (source: 'camera' | 'gallery') => {
+    try {
+      let result;
+      const options = {
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3] as [number, number],
+        quality: 0.7,
+      };
+
+      if (source === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission denied', 'We need camera permissions to take a photo');
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync(options);
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission denied', 'We need library permissions to select photos');
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync(options);
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        const newMessage: ChatMessage = {
+          id: (messages.length + 1).toString(),
+          sender: 'me',
+          text: '',
+          time: new Date().toLocaleTimeString().slice(0, 5),
+          image: imageUri,
+        };
+
+        setMessages([...messages, newMessage]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while selecting an image');
+    }
+
+    setShowImageOptions(false);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -87,15 +207,29 @@ export default function Messages() {
               <Button onPress={() => setSelectedChat(null)} icon={ArrowLeft} circular />
               <Text fontWeight="bold" fontSize="$5">{selectedChat.name}</Text>
               <XStack>
-                <Button icon={CheckCircle} variant="outlined" circular scaleIcon={1.5} />
-                <Button icon={Heart} variant="outlined" circular scaleIcon={1.55} />
+                <Button
+                  icon={CheckCircle}
+                  variant="outlined"
+                  circular
+                  scaleIcon={1.5}
+                  color={checkSelected ? "#D9F87F" : undefined}
+                  onPress={() => setCheckSelected(!checkSelected)}
+                />
+                <Button
+                  icon={Heart}
+                  variant="outlined"
+                  circular
+                  scaleIcon={1.55}
+                  color={heartSelected ? "#D9F87F" : undefined}
+                  onPress={() => setHeartSelected(!heartSelected)}
+                />
               </XStack>
             </XStack>
 
             <FlatList
-              data={chatData}
+              data={messages}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }} // Add more bottom padding
+              contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
               renderItem={({ item }) => (
                 <YStack mb="$3" ai={item.sender === 'me' ? 'flex-end' : 'flex-start'}>
                   {item.image ? (
@@ -130,13 +264,68 @@ export default function Messages() {
               bottom={10}
               left={10}
               right={10}
+              backgroundColor="#000"
             >
-              <Input flex={1} placeholder="Mesajınızı yazın..." />
-              <Button circular chromeless icon={Camera} scaleIcon={1.5} />
-              <Button circular bg="#D9F87F" icon={ArrowRight} color="#1e1e1e" scaleIcon={1.5} />
+              <Input
+                flex={1}
+                placeholder="Mesajınızı yazın..."
+                value={messageText}
+                onChangeText={setMessageText}
+              />
+              <Button
+                circular
+                chromeless
+                icon={Camera}
+                scaleIcon={1.5}
+                onPress={() => setShowImageOptions(true)}
+              />
+              <Button
+                circular
+                bg="#D9F87F"
+                icon={ArrowRight}
+                color="#1e1e1e"
+                scaleIcon={1.5}
+                onPress={handleSendMessage}
+              />
             </XStack>
-          </YStack>
 
+            <AlertDialog
+              open={showImageOptions}
+              onOpenChange={setShowImageOptions}
+            >
+              <AlertDialog.Portal>
+                <AlertDialog.Overlay />
+                <AlertDialog.Content>
+                  <YStack space="$3" p="$3">
+                    <Text fontWeight="bold" fontSize="$5" textAlign="center">Select Image Source</Text>
+                    <Button
+                      size="$4"
+                      icon={Camera}
+                      theme="green"
+                      onPress={() => handleImageSelection('camera')}
+                    >
+                      Fotoğraf Çek
+                    </Button>
+                    <Button
+                      size="$4"
+                      icon={ImageIcon}
+                      theme="blue"
+                      onPress={() => handleImageSelection('gallery')}
+                    >
+                      Galeriye Git
+                    </Button>
+                    <Button
+                      size="$4"
+                      theme="red"
+                      onPress={() => setShowImageOptions(false)}
+                    >
+                      İptal Et
+                    </Button>
+                  </YStack>
+                </AlertDialog.Content>
+              </AlertDialog.Portal>
+            </AlertDialog>
+          </YStack>
         ) : (
           <YStack f={1} p="$3">
             <YStack mb="$4">
@@ -157,7 +346,10 @@ export default function Messages() {
                       icon={<X size={20} color="#666" />}
                       variant="outlined"
                       circular
-                      onPress={() => setSearchActive(false)} />
+                      onPress={() => {
+                        setSearchActive(false);
+                        setSearchText('');
+                      }} />
                     <Input
                       placeholder="Mesaj ara..."
                       width={"85%"}
@@ -170,7 +362,13 @@ export default function Messages() {
                       color="$gray8"
                       placeholderTextColor="$gray6"
                       autoFocus
-                      onBlur={() => setSearchActive(false)}
+                      value={searchText}
+                      onChangeText={setSearchText}
+                      onBlur={() => {
+                        if (searchText.trim() === '') {
+                          setSearchActive(false);
+                        }
+                      }}
                     />
                   </YStack>
                 ) : (
@@ -184,54 +382,72 @@ export default function Messages() {
               </XStack>
             </YStack>
             <FlatList
-              data={messagesData}
+              data={filteredMessages}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ paddingBottom: 16 }}
               renderItem={({ item }) => (
-                <Card
-                  elevate
-                  size="$5"
-                  height={70}
-                  display='flex'
-                  justifyContent='center'
-                  mb="$3"
-                  pressStyle={{ scale: 0.97 }}
-                  onPress={() => setSelectedChat(item)}
-                  bg={item.unreadCount ? '$green4' : '$gray2'}
+                <Swipeable
+                  renderRightActions={() => renderRightActions(item.id)}
+                  renderLeftActions={() => renderLeftActions(item.id)}
                 >
-                  <XStack ai="center" space="$3" p="$2">
-                    <Avatar circular size="$4">
-                      <Avatar.Image source={{ uri: item.avatar }} />
-                    </Avatar>
-                    <YStack f={1}>
-                      <XStack jc="space-between" ai="center">
-                        <Text fontWeight="bold">{item.name}</Text>
-                        <Text fontSize="$2" color={item.unreadCount ? 'white' : '$gray8'}>
-                          {item.time}
-                        </Text>
-                      </XStack>
-                      <XStack jc="space-between" ai="center">
-                        <Text color={item.unreadCount ? "white" : '$gray8'} numberOfLines={1}>
-                          {item.lastMessage}
-                        </Text>
-                        {item.unreadCount && (
-                          <Card elevate size="$2" bc="$green8" br="$10" ai="center" jc="center" style={{ width: 16, height: 16 }}>
-                            <Text fontSize="$1" color="white">
-                              {item.unreadCount}
-                            </Text>
-                          </Card>
-                        )}
-                      </XStack>
-                    </YStack>
-
-                  </XStack>
-                </Card>
+                  <Card
+                    elevate
+                    size="$5"
+                    height={70}
+                    display='flex'
+                    justifyContent='center'
+                    mb="$3"
+                    pressStyle={{ scale: 0.97 }}
+                    onPress={() => {
+                      setSelectedChat(item);
+                      markAsRead(item.id);
+                    }}
+                    bg={item.unreadCount ? '$green4' : '$gray2'}
+                  >
+                    <XStack ai="center" space="$3" p="$2">
+                      <Avatar circular size="$4">
+                        <Avatar.Image source={{ uri: item.avatar }} />
+                      </Avatar>
+                      <YStack f={1}>
+                        <XStack jc="space-between" ai="center">
+                          <Text fontWeight="bold">{item.name}</Text>
+                          <Text fontSize="$2" color={item.unreadCount ? 'white' : '$gray8'}>
+                            {item.time}
+                          </Text>
+                        </XStack>
+                        <XStack jc="space-between" ai="center">
+                          <Text color={item.unreadCount ? "white" : '$gray8'} numberOfLines={1}>
+                            {item.lastMessage}
+                          </Text>
+                          {item.unreadCount && (
+                            <Card elevate size="$2" bc="$green8" br="$10" ai="center" jc="center" style={{ width: 16, height: 16 }}>
+                              <Text fontSize="$1" color="white">
+                                {item.unreadCount}
+                              </Text>
+                            </Card>
+                          )}
+                        </XStack>
+                      </YStack>
+                    </XStack>
+                  </Card>
+                </Swipeable>
               )}
             />
           </YStack>
-        )
-        }
+        )}
       </KeyboardAvoidingView>
-    </SafeAreaView >
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  swipeAction: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+  },
+  swipeActionText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
