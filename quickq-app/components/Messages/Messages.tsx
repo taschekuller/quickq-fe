@@ -89,6 +89,8 @@ export default function Messages() {
   const [messages, setMessages] = useState<ChatMessage[]>(chatData)
   const [showImageOptions, setShowImageOptions] = useState(false)
   const [messagesList, setMessagesList] = useState<Message[]>(messagesData)
+  const [checkSelected, setCheckSelected] = useState(false)
+  const [heartSelected, setHeartSelected] = useState(false)
 
   // Mark message as read
   const markAsRead = (id: string) => {
@@ -205,8 +207,22 @@ export default function Messages() {
               <Button onPress={() => setSelectedChat(null)} icon={ArrowLeft} circular />
               <Text fontWeight="bold" fontSize="$5">{selectedChat.name}</Text>
               <XStack>
-                <Button icon={CheckCircle} variant="outlined" circular scaleIcon={1.5} />
-                <Button icon={Heart} variant="outlined" circular scaleIcon={1.55} />
+                <Button
+                  icon={CheckCircle}
+                  variant="outlined"
+                  circular
+                  scaleIcon={1.5}
+                  color={checkSelected ? "#D9F87F" : undefined}
+                  onPress={() => setCheckSelected(!checkSelected)}
+                />
+                <Button
+                  icon={Heart}
+                  variant="outlined"
+                  circular
+                  scaleIcon={1.55}
+                  color={heartSelected ? "#D9F87F" : undefined}
+                  onPress={() => setHeartSelected(!heartSelected)}
+                />
               </XStack>
             </XStack>
 
