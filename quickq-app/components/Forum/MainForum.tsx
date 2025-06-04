@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { View, Pressable, StyleSheet, Image, Alert } from 'react-native';
-import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea, Sheet, Adapt, getFontSize, FontSizeTokens, Spinner } from 'tamagui';
+import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, Select, TextArea, Sheet, Adapt, getFontSize, FontSizeTokens, Spinner, Switch } from 'tamagui';
 import {
   MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
   Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera, Check, ChevronDown, ChevronUp,
-  Send, Reply, CircleX
+  Send, Reply, CircleX, Filter, X
 } from '@tamagui/lucide-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
@@ -749,6 +749,27 @@ export default function MainForum() {
   const [activeTab, setActiveTab] = useState<'soru' | 'post' | null>(null);
   const [allQuestions, setAllQuestions] = useState<Question[]>(questions.map(q => ({ ...q, replies: [] })));
 
+  // Filter state
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    tags: {
+      ayt: false,
+      tyt: false
+    },
+    gradeLevel: {
+      '9': false,
+      '10': false,
+      '11': false,
+      '12': false
+    },
+    lecture: '',
+    unit: ''
+  });
+  const [selectedLecture, setSelectedLecture] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
+  const [filtersApplied, setFiltersApplied] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const rotation = useSharedValue(0);
   const firstButtonOffset = useSharedValue(0);
   const secondButtonOffset = useSharedValue(0);
@@ -906,6 +927,71 @@ export default function MainForum() {
     Alert.alert('Başarılı', 'Yanıtınız eklendi!');
   };
 
+  // Filter questions based on selected filters
+  const filteredQuestions = useMemo(() => {
+    if (!filtersApplied && !searchQuery.trim()) return allQuestions;
+
+    return allQuestions.filter(question => {
+      // Search query filter
+      if (searchQuery.trim() &&
+        !question.topic.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !question.category.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
+
+      // Only apply tag/grade/etc filters if filters are applied
+      if (filtersApplied) {
+        // Tag filters
+        if (filters.tags.ayt && !question.tags.some(tag => tag.toLowerCase() === 'ayt')) {
+          return false;
+        }
+        if (filters.tags.tyt && !question.tags.some(tag => tag.toLowerCase() === 'tyt')) {
+          return false;
+        }
+
+        // Grade level check would require tags to include grade info - checking just as example
+        const hasSelectedGrade = Object.entries(filters.gradeLevel).some(([grade, isSelected]) => {
+          return isSelected && question.tags.some(tag => tag === grade);
+        });
+
+        if (Object.values(filters.gradeLevel).some(v => v) && !hasSelectedGrade) {
+          return false;
+        }
+
+        // Lecture filter
+        if (selectedLecture && !question.category.toLowerCase().includes(selectedLecture.toLowerCase())) {
+          return false;
+        }
+
+        // Unit filter - this would require unit info in questions
+        if (selectedUnit && !question.tags.some(tag => tag.toLowerCase().includes(selectedUnit.toLowerCase()))) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [allQuestions, filters, selectedLecture, selectedUnit, filtersApplied, searchQuery]);
+
+  const applyFilters = () => {
+    setFiltersApplied(true);
+    setFilterOpen(false);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      tags: { ayt: false, tyt: false },
+      gradeLevel: { '9': false, '10': false, '11': false, '12': false },
+      lecture: '',
+      unit: ''
+    });
+    setSelectedLecture('');
+    setSelectedUnit('');
+    setFiltersApplied(false);
+    setFilterOpen(false);
+    setSearchQuery('');
+  };
+
   if (activeTab === 'soru') {
     return (
       <YStack f={1} px="$2">
@@ -959,8 +1045,16 @@ export default function MainForum() {
           <Input
             placeholder="Soru ara..."
             width="85%"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
-          <Button size="$3" icon={SlidersHorizontal} circular />
+          <Button
+            size="$3"
+            icon={SlidersHorizontal}
+            circular
+            onPress={() => setFilterOpen(true)}
+            bg={filtersApplied ? "#D9F87F" : undefined}
+          />
         </XStack>
 
         <ScrollView
@@ -968,54 +1062,182 @@ export default function MainForum() {
           contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         >
+          {filtersApplied && (
+            <XStack ai="center" jc="space-between" mb="$2">
+              <Text>Filtreler uygulandı</Text>
+              <Button size="$2" onPress={clearFilters}>Filtreleri temizle</Button>
+            </XStack>
+          )}
+
           <YStack space="$4">
-            {allQuestions.map((q) => (
-              <Pressable key={q.id} onPress={() => handleQuestionPress(q.id)}>
-                <Card padding="$3" elevate bordered>
-                  <YStack space={2}>
-                    <YStack space="$1" style={styles.questionHeader}>
-                      <Text fontWeight="bold" fontSize="$6">{q.category}</Text>
-                      <Text color="$color9" fontSize="$4">{q.createdAt}</Text>
+            {filteredQuestions.length > 0 ? (
+              filteredQuestions.map((q) => (
+                <Pressable key={q.id} onPress={() => handleQuestionPress(q.id)}>
+                  <Card padding="$3" elevate bordered>
+                    <YStack space={2}>
+                      <YStack space="$1" style={styles.questionHeader}>
+                        <Text fontWeight="bold" fontSize="$6">{q.category}</Text>
+                        <Text color="$color9" fontSize="$4">{q.createdAt}</Text>
+                      </YStack>
+                      <XStack ai="center" mt={5} gap={5}>
+                        <Avatar circular size="$2" bg="$purple10">
+                          <Avatar.Fallback style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <Text>{q.user.charAt(0)}</Text>
+                          </Avatar.Fallback>
+                        </Avatar>
+                        <Text fontSize="$3">{q.user}</Text>
+                      </XStack>
+                      <Text numberOfLines={2} mt={2} color="$color9">
+                        {q.topic}
+                      </Text>
+                      <XStack mt={5} gap={5} justifyContent="space-between" alignItems="center">
+                        <XStack>
+                          <Button circular scaleIcon={1.5} icon={MessageCircleMore} onPress={() => handleQuestionPress(q.id)} />
+                          <Button
+                            circular
+                            scaleIcon={1.5}
+                            icon={isBookmarked(q.id) ? BookmarkCheck : Bookmark}
+                            color={isBookmarked(q.id) ? '#D9F87F' : 'white'}
+                            onPress={(e) => toggleBookmark(q, e)}
+                          />
+                        </XStack>
+                        <XStack gap={2}>
+                          {q.tags.map((tag, index) => (
+                            <Button radiused key={index} size="$1" theme="blue" mt={6} alignSelf="flex-start">
+                              <Text>
+                                {`#${tag}`}
+                              </Text>
+                            </Button>
+                          ))}
+                        </XStack>
+                      </XStack>
                     </YStack>
-                    <XStack ai="center" mt={5} gap={5}>
-                      <Avatar circular size="$2" bg="$purple10">
-                        <Avatar.Fallback style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                          <Text>{q.user.charAt(0)}</Text>
-                        </Avatar.Fallback>
-                      </Avatar>
-                      <Text fontSize="$3">{q.user}</Text>
-                    </XStack>
-                    <Text numberOfLines={2} mt={2} color="$color9">
-                      {q.topic}
-                    </Text>
-                    <XStack mt={5} gap={5} justifyContent="space-between" alignItems="center">
-                      <XStack>
-                        <Button circular scaleIcon={1.5} icon={MessageCircleMore} onPress={() => handleQuestionPress(q.id)} />
-                        <Button
-                          circular
-                          scaleIcon={1.5}
-                          icon={isBookmarked(q.id) ? BookmarkCheck : Bookmark}
-                          color={isBookmarked(q.id) ? '#D9F87F' : 'white'}
-                          onPress={(e) => toggleBookmark(q, e)}
-                        />
-                      </XStack>
-                      <XStack gap={2}>
-                        {q.tags.map((tag, index) => (
-                          <Button radiused key={index} size="$1" theme="blue" mt={6} alignSelf="flex-start">
-                            <Text>
-                              {`#${tag}`}
-                            </Text>
-                          </Button>
-                        ))}
-                      </XStack>
-                    </XStack>
-                  </YStack>
-                </Card>
-              </Pressable>
-            ))}
+                  </Card>
+                </Pressable>
+              ))
+            ) : (
+              <YStack ai="center" jc="center" padding="$8">
+                <Text fontSize="$5" color="$color9" textAlign="center">
+                  Sonuç bulunamadı.
+                </Text>
+                {filtersApplied && (
+                  <Button mt="$4" onPress={clearFilters}>
+                    Filtreleri temizle
+                  </Button>
+                )}
+              </YStack>
+            )}
           </YStack>
         </ScrollView>
       </YStack>
+
+      {/* Filter Sheet */}
+      <Sheet
+        modal
+        open={filterOpen}
+        onOpenChange={setFilterOpen}
+        snapPoints={[70]}
+        position={0}
+        dismissOnSnapToBottom
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame padding="$4">
+          <Sheet.Handle />
+          <YStack space="$4">
+            <XStack jc="space-between" ai="center">
+              <Text fontWeight="bold" fontSize="$6">Filtrele</Text>
+              <Button
+                size="$3"
+                circular
+                icon={X}
+                onPress={() => setFilterOpen(false)}
+              />
+            </XStack>
+
+            {/* Tag Filters */}
+            <YStack space="$2">
+              <Text fontWeight="bold" fontSize="$5">Sınav</Text>
+              <XStack space="$4">
+                <XStack space="$2" ai="center">
+                  <Switch
+                    checked={filters.tags.ayt}
+                    onCheckedChange={(checked) =>
+                      setFilters({ ...filters, tags: { ...filters.tags, ayt: checked } })
+                    }
+                  />
+                  <Text>AYT</Text>
+                </XStack>
+                <XStack space="$2" ai="center">
+                  <Switch
+                    checked={filters.tags.tyt}
+                    onCheckedChange={(checked) =>
+                      setFilters({ ...filters, tags: { ...filters.tags, tyt: checked } })
+                    }
+                  />
+                  <Text>TYT</Text>
+                </XStack>
+              </XStack>
+            </YStack>
+
+            {/* Grade Level Filters */}
+            <YStack space="$2">
+              <Text fontWeight="bold" fontSize="$5">Sınıf</Text>
+              <XStack flexWrap="wrap" space="$4">
+                {[9, 10, 11, 12].map(grade => (
+                  <XStack key={grade} space="$2" ai="center" width="30%">
+                    <Switch
+                      checked={filters.gradeLevel[grade.toString() as '9' | '10' | '11' | '12']}
+                      onCheckedChange={(checked) => {
+                        setFilters({
+                          ...filters,
+                          gradeLevel: { ...filters.gradeLevel, [grade.toString()]: checked }
+                        });
+                      }}
+                    />
+                    <Text>{grade}. Sınıf</Text>
+                  </XStack>
+                ))}
+              </XStack>
+            </YStack>
+
+            {/* Lecture Filter */}
+            <YStack space="$2">
+              <Text fontWeight="bold" fontSize="$5">Ders</Text>
+              <SubjectSelect
+                value={selectedLecture}
+                onValueChange={setSelectedLecture}
+              />
+            </YStack>
+
+            {/* Unit Filter */}
+            <YStack space="$2">
+              <Text fontWeight="bold" fontSize="$5">Ünite</Text>
+              <UnitSelect
+                value={selectedUnit}
+                onValueChange={setSelectedUnit}
+              />
+            </YStack>
+
+            {/* Filter Action Buttons */}
+            <XStack space="$4" mt="$4">
+              <Button
+                flex={1}
+                onPress={clearFilters}
+              >
+                Temizle
+              </Button>
+              <Button
+                flex={1}
+                bg="#D9F87F"
+                color="black"
+                onPress={applyFilters}
+              >
+                Uygula
+              </Button>
+            </XStack>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
 
       <View style={styles.fabContainer}>
         <Animated.View style={[styles.fabActionButton, secondButtonStyle]}>
