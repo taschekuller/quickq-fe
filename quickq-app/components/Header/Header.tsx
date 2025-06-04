@@ -4,9 +4,9 @@ import { useNavigation, useRouter } from 'expo-router';
 import { DrawerActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Menu, Bell, Cat } from '@tamagui/lucide-icons';
+import { Menu, Cat } from '@tamagui/lucide-icons';
 import { Avatar, Button, XStack } from 'tamagui';
-
+import { NotificationCenter } from '../Notification';
 
 
 export default function Header() {
@@ -42,13 +42,7 @@ export default function Header() {
             alignItems="center"
             justifyContent="center"
           >
-            <Button
-              circular
-              scaleIcon={1.5}
-              icon={Bell}
-              color={"#e1e1e1"}
-              style={{ backgroundColor: "none" }}
-            />
+            <NotificationCenter />
             <Button
               circular
               backgroundColor={"none"}
