@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView } from 'react-native'
-import { Button, Card, Text, XStack, YStack, Avatar, Input } from 'tamagui'
-import { ArrowLeft, Heart, Search, X, CheckCircle, Camera, ArrowRight } from '@tamagui/lucide-icons'
+import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView, Alert } from 'react-native'
+import { Button, Card, Text, XStack, YStack, Avatar, Input, AlertDialog } from 'tamagui'
+import { ArrowLeft, Heart, Search, X, CheckCircle, Camera, ArrowRight, Image as ImageIcon } from '@tamagui/lucide-icons'
+import * as ImagePicker from 'expo-image-picker'
+
 interface Message {
   id: string
   name: string
@@ -77,6 +79,75 @@ export default function Messages() {
   const [selectedChat, setSelectedChat] = useState<Message | null>(null)
   const [searchActive, setSearchActive] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const [messageText, setMessageText] = useState('')
+  const [messages, setMessages] = useState<ChatMessage[]>(chatData)
+  const [showImageOptions, setShowImageOptions] = useState(false)
+
+  // Filter messages by sender name
+  const filteredMessages = searchText.trim() === ''
+    ? messagesData
+    : messagesData.filter(message =>
+      message.name.toLowerCase().includes(searchText.toLowerCase())
+    );
+
+  const handleSendMessage = () => {
+    if (messageText.trim() === '') return;
+
+    const newMessage: ChatMessage = {
+      id: (messages.length + 1).toString(),
+      sender: 'me',
+      text: messageText,
+      time: new Date().toLocaleTimeString().slice(0, 5),
+    };
+
+    setMessages([...messages, newMessage]);
+    setMessageText('');
+  };
+
+  const handleImageSelection = async (source: 'camera' | 'gallery') => {
+    try {
+      let result;
+      const options = {
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3] as [number, number],
+        quality: 0.7,
+      };
+
+      if (source === 'camera') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission denied', 'We need camera permissions to take a photo');
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync(options);
+      } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission denied', 'We need library permissions to select photos');
+          return;
+        }
+        result = await ImagePicker.launchImageLibraryAsync(options);
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        const newMessage: ChatMessage = {
+          id: (messages.length + 1).toString(),
+          sender: 'me',
+          text: '',
+          time: new Date().toLocaleTimeString().slice(0, 5),
+          image: imageUri,
+        };
+
+        setMessages([...messages, newMessage]);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Something went wrong while selecting an image');
+    }
+
+    setShowImageOptions(false);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -93,9 +164,9 @@ export default function Messages() {
             </XStack>
 
             <FlatList
-              data={chatData}
+              data={messages}
               keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }} // Add more bottom padding
+              contentContainerStyle={{ paddingBottom: 100, paddingTop: 16 }}
               renderItem={({ item }) => (
                 <YStack mb="$3" ai={item.sender === 'me' ? 'flex-end' : 'flex-start'}>
                   {item.image ? (
@@ -130,13 +201,68 @@ export default function Messages() {
               bottom={10}
               left={10}
               right={10}
+              backgroundColor="#000"
             >
-              <Input flex={1} placeholder="Mesajınızı yazın..." />
-              <Button circular chromeless icon={Camera} scaleIcon={1.5} />
-              <Button circular bg="#D9F87F" icon={ArrowRight} color="#1e1e1e" scaleIcon={1.5} />
+              <Input
+                flex={1}
+                placeholder="Mesajınızı yazın..."
+                value={messageText}
+                onChangeText={setMessageText}
+              />
+              <Button
+                circular
+                chromeless
+                icon={Camera}
+                scaleIcon={1.5}
+                onPress={() => setShowImageOptions(true)}
+              />
+              <Button
+                circular
+                bg="#D9F87F"
+                icon={ArrowRight}
+                color="#1e1e1e"
+                scaleIcon={1.5}
+                onPress={handleSendMessage}
+              />
             </XStack>
-          </YStack>
 
+            <AlertDialog
+              open={showImageOptions}
+              onOpenChange={setShowImageOptions}
+            >
+              <AlertDialog.Portal>
+                <AlertDialog.Overlay />
+                <AlertDialog.Content>
+                  <YStack space="$3" p="$3">
+                    <Text fontWeight="bold" fontSize="$5" textAlign="center">Select Image Source</Text>
+                    <Button
+                      size="$4"
+                      icon={Camera}
+                      theme="green"
+                      onPress={() => handleImageSelection('camera')}
+                    >
+                      Take a Photo
+                    </Button>
+                    <Button
+                      size="$4"
+                      icon={ImageIcon}
+                      theme="blue"
+                      onPress={() => handleImageSelection('gallery')}
+                    >
+                      Choose from Gallery
+                    </Button>
+                    <Button
+                      size="$4"
+                      theme="red"
+                      onPress={() => setShowImageOptions(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </YStack>
+                </AlertDialog.Content>
+              </AlertDialog.Portal>
+            </AlertDialog>
+          </YStack>
         ) : (
           <YStack f={1} p="$3">
             <YStack mb="$4">
@@ -157,7 +283,10 @@ export default function Messages() {
                       icon={<X size={20} color="#666" />}
                       variant="outlined"
                       circular
-                      onPress={() => setSearchActive(false)} />
+                      onPress={() => {
+                        setSearchActive(false);
+                        setSearchText('');
+                      }} />
                     <Input
                       placeholder="Mesaj ara..."
                       width={"85%"}
@@ -170,7 +299,13 @@ export default function Messages() {
                       color="$gray8"
                       placeholderTextColor="$gray6"
                       autoFocus
-                      onBlur={() => setSearchActive(false)}
+                      value={searchText}
+                      onChangeText={setSearchText}
+                      onBlur={() => {
+                        if (searchText.trim() === '') {
+                          setSearchActive(false);
+                        }
+                      }}
                     />
                   </YStack>
                 ) : (
@@ -184,7 +319,7 @@ export default function Messages() {
               </XStack>
             </YStack>
             <FlatList
-              data={messagesData}
+              data={filteredMessages}
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ paddingBottom: 16 }}
               renderItem={({ item }) => (
@@ -229,9 +364,8 @@ export default function Messages() {
               )}
             />
           </YStack>
-        )
-        }
+        )}
       </KeyboardAvoidingView>
-    </SafeAreaView >
+    </SafeAreaView>
   )
 }
