@@ -59,6 +59,9 @@ interface Question {
   correctOption?: string;
   imageUri?: string;
   replies?: Reply[];
+  lecture?: string;
+  unit?: string;
+  grade?: string;
 }
 
 interface Reply {
@@ -345,6 +348,91 @@ const UnitSelect = ({ value, onValueChange }: { value: string, onValueChange: (v
   );
 };
 
+const GradeSelect = ({ value, onValueChange }: { value: string, onValueChange: (val: string) => void }) => {
+  const grades = [
+    { label: "9. Sınıf", value: "9" },
+    { label: "10. Sınıf", value: "10" },
+    { label: "11. Sınıf", value: "11" },
+    { label: "12. Sınıf", value: "12" }
+  ];
+
+  return (
+    <Select value={value} onValueChange={onValueChange} >
+      <Select.Trigger maxWidth={220} iconAfter={ChevronDown}>
+        <Select.Value placeholder="Sınıf Seçiniz" />
+      </Select.Trigger>
+
+      <Adapt platform="touch">
+        <Sheet modal dismissOnSnapToBottom animation="medium">
+          <Sheet.Frame>
+            <Sheet.ScrollView>
+              <Adapt.Contents />
+            </Sheet.ScrollView>
+          </Sheet.Frame>
+          <Sheet.Overlay
+            backgroundColor="$shadowColor"
+            animation="lazy"
+            enterStyle={{ opacity: 0 }}
+            exitStyle={{ opacity: 0 }}
+          />
+        </Sheet>
+      </Adapt>
+
+      <Select.Content zIndex={200000}>
+        <Select.ScrollUpButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronUp size={20} />
+          </YStack>
+        </Select.ScrollUpButton>
+
+        <Select.Viewport
+          minWidth={200}
+        >
+          <Select.Group>
+            <Select.Label fontWeight={'bold'} color={'#D9F87F'}>Sınıf</Select.Label>
+            {React.useMemo(
+              () =>
+                grades.map((item, i) => {
+                  return (
+                    <Select.Item
+                      index={i}
+                      key={item.label}
+                      value={item.value}
+                    >
+                      <Select.ItemText>{item.label}</Select.ItemText>
+                      <Select.ItemIndicator marginLeft="auto">
+                        <Check size={16} />
+                      </Select.ItemIndicator>
+                    </Select.Item>
+                  )
+                }),
+              [grades]
+            )}
+          </Select.Group>
+        </Select.Viewport>
+
+        <Select.ScrollDownButton
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          width="100%"
+          height="$3"
+        >
+          <YStack zIndex={10}>
+            <ChevronDown size={20} />
+          </YStack>
+        </Select.ScrollDownButton>
+      </Select.Content>
+    </Select>
+  );
+};
+
 const ImagePickerComponent = ({ onImageSelected }: { onImageSelected: (uri: string) => void }) => {
   const [loading, setLoading] = useState(false);
 
@@ -499,6 +587,7 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
   const [title, setTitle] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState<string[]>(['#ayt', '#fizik', '#tekrar']);
   const [newTag, setNewTag] = useState('');
@@ -524,16 +613,28 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
       return;
     }
 
+    // Add the grade to tags if selected
+    const allTags = [...tags];
+    if (selectedGrade) {
+      const gradeTag = selectedGrade;
+      if (!allTags.some(tag => tag === gradeTag)) {
+        allTags.push(gradeTag);
+      }
+    }
+
     const newQuestion: Partial<Question> = {
       category: title,
       user: 'Kullanıcı',
       topic: description || 'Açıklama yok',
       createdAt: 'Şimdi',
-      tags: tags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
+      tags: allTags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
       correctOption: correctOption || undefined,
       imageUri,
       type: 'question',
-      replies: []
+      replies: [],
+      lecture: selectedClass,
+      unit: selectedUnit,
+      grade: selectedGrade
     };
 
     onSubmit(newQuestion);
@@ -547,6 +648,12 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
           placeholder="Örn: Türev'in Tanımı"
           value={title}
           onChangeText={setTitle}
+        />
+
+        <Label>Sınıf *</Label>
+        <GradeSelect
+          value={selectedGrade}
+          onValueChange={setSelectedGrade}
         />
 
         <Label>Ders *</Label>
@@ -641,6 +748,9 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
   const [tags, setTags] = useState<string[]>(['#post']);
   const [newTag, setNewTag] = useState('');
   const [imageUri, setImageUri] = useState<string | undefined>();
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedUnit, setSelectedUnit] = useState('');
 
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -659,14 +769,26 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
       return;
     }
 
+    // Add the grade to tags if selected
+    const allTags = [...tags];
+    if (selectedGrade) {
+      const gradeTag = selectedGrade;
+      if (!allTags.some(tag => tag === gradeTag)) {
+        allTags.push(gradeTag);
+      }
+    }
+
     const newPost: Partial<Question> = {
       category: title,
       user: 'Kullanıcı',
       topic: description || 'Açıklama yok',
       createdAt: 'Şimdi',
-      tags: tags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
+      tags: allTags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
       type: 'post',
-      imageUri
+      imageUri,
+      lecture: selectedClass,
+      unit: selectedUnit,
+      grade: selectedGrade
     };
 
     onSubmit(newPost);
@@ -680,6 +802,24 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
           placeholder="Örn: YKS Motivasyonu"
           value={title}
           onChangeText={setTitle}
+        />
+
+        <Label>Sınıf</Label>
+        <GradeSelect
+          value={selectedGrade}
+          onValueChange={setSelectedGrade}
+        />
+
+        <Label>Ders</Label>
+        <SubjectSelect
+          value={selectedClass}
+          onValueChange={setSelectedClass}
+        />
+
+        <Label>Ünite</Label>
+        <UnitSelect
+          value={selectedUnit}
+          onValueChange={setSelectedUnit}
         />
 
         <Label>Açıklama *</Label>
@@ -949,22 +1089,29 @@ export default function MainForum() {
           return false;
         }
 
-        // Grade level check would require tags to include grade info - checking just as example
+        // Grade level check - check both tags and grade field
         const hasSelectedGrade = Object.entries(filters.gradeLevel).some(([grade, isSelected]) => {
-          return isSelected && question.tags.some(tag => tag === grade);
+          if (!isSelected) return false;
+
+          // Check if grade is in tags or as a direct property
+          return question.tags.some(tag => tag === grade) || question.grade === grade;
         });
 
         if (Object.values(filters.gradeLevel).some(v => v) && !hasSelectedGrade) {
           return false;
         }
 
-        // Lecture filter
-        if (selectedLecture && !question.category.toLowerCase().includes(selectedLecture.toLowerCase())) {
+        // Lecture filter - check both category and lecture field
+        if (selectedLecture &&
+          !question.category.toLowerCase().includes(selectedLecture.toLowerCase()) &&
+          (!question.lecture || !question.lecture.toLowerCase().includes(selectedLecture.toLowerCase()))) {
           return false;
         }
 
-        // Unit filter - this would require unit info in questions
-        if (selectedUnit && !question.tags.some(tag => tag.toLowerCase().includes(selectedUnit.toLowerCase()))) {
+        // Unit filter - check both tags and unit field
+        if (selectedUnit &&
+          !question.tags.some(tag => tag.toLowerCase().includes(selectedUnit.toLowerCase())) &&
+          (!question.unit || !question.unit.toLowerCase().includes(selectedUnit.toLowerCase()))) {
           return false;
         }
       }
@@ -1161,6 +1308,7 @@ export default function MainForum() {
                 <XStack space="$2" ai="center">
                   <Switch
                     checked={filters.tags.ayt}
+                    style={{ backgroundColor: filters.tags.ayt ? '#D9F87F' : '' }}
                     onCheckedChange={(checked) =>
                       setFilters({ ...filters, tags: { ...filters.tags, ayt: checked } })
                     }
@@ -1170,6 +1318,7 @@ export default function MainForum() {
                 <XStack space="$2" ai="center">
                   <Switch
                     checked={filters.tags.tyt}
+                    style={{ backgroundColor: filters.tags.tyt ? '#D9F87F' : '' }}
                     onCheckedChange={(checked) =>
                       setFilters({ ...filters, tags: { ...filters.tags, tyt: checked } })
                     }
@@ -1187,6 +1336,10 @@ export default function MainForum() {
                   <XStack key={grade} space="$2" ai="center" width="30%">
                     <Switch
                       checked={filters.gradeLevel[grade.toString() as '9' | '10' | '11' | '12']}
+                      style={{
+                        backgroundColor: filters.gradeLevel[grade.toString() as '9' | '10' | '11' | '12'] ? '#D9F87F' : '',
+                        marginBottom: 4,
+                      }}
                       onCheckedChange={(checked) => {
                         setFilters({
                           ...filters,
