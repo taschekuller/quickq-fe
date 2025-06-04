@@ -96,7 +96,7 @@ const NotificationCenter = () => {
         style={[styles.swipeAction, { backgroundColor: '#4CAF50' }]}
         onPress={() => markAsRead(id)}
       >
-        <Text style={styles.swipeActionText}>Read</Text>
+        <Text style={styles.swipeActionText}>Okundu</Text>
       </TouchableOpacity>
     );
   };
@@ -107,7 +107,7 @@ const NotificationCenter = () => {
         style={[styles.swipeAction, { backgroundColor: '#2196F3' }]}
         onPress={() => markAsUnread(id)}
       >
-        <Text style={styles.swipeActionText}>Unread</Text>
+        <Text style={styles.swipeActionText}>Okunmadı</Text>
       </TouchableOpacity>
     );
   };

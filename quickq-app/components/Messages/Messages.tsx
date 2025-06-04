@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView, Alert } from 'react-native'
+import { View, FlatList, Image, SafeAreaView, Keyboard, KeyboardAvoidingView, Alert, TouchableOpacity, StyleSheet } from 'react-native'
 import { Button, Card, Text, XStack, YStack, Avatar, Input, AlertDialog } from 'tamagui'
 import { ArrowLeft, Heart, Search, X, CheckCircle, Camera, ArrowRight, Image as ImageIcon } from '@tamagui/lucide-icons'
 import * as ImagePicker from 'expo-image-picker'
+import { Swipeable } from 'react-native-gesture-handler'
 
 interface Message {
   id: string
@@ -11,6 +12,7 @@ interface Message {
   time: string
   unreadCount?: number
   avatar: string
+  read?: boolean
 }
 
 interface ChatMessage {
@@ -28,28 +30,32 @@ const messagesData: Message[] = [
     lastMessage: 'Görseldeki işlem adımlarını...',
     time: '18:31',
     unreadCount: 5,
-    avatar: 'https://i.pravatar.cc/150?img=1',
+    avatar: 'https://avatar.iran.liara.run/public/1',
+    read: false,
   },
   {
     id: '2',
     name: 'Doğukan İnce',
     lastMessage: 'Evet, benzer bir yöntem olarak...',
     time: '16:34',
-    avatar: 'https://i.pravatar.cc/150?img=2',
+    avatar: 'https://avatar.iran.liara.run/public/2',
+    read: true,
   },
   {
     id: '3',
     name: 'Memoş',
     lastMessage: 'Rica ederim, başarılar dilerim.',
     time: 'Yesterday',
-    avatar: 'https://i.pravatar.cc/150?img=3',
+    avatar: 'https://avatar.iran.liara.run/public/3',
+    read: true,
   },
   {
     id: '4',
     name: 'Betül Küçükkaraduman',
     lastMessage: 'Merhaba, fizik soruyla ilgili...',
     time: '2d',
-    avatar: 'https://i.pravatar.cc/150?img=4',
+    avatar: 'https://avatar.iran.liara.run/public/4',
+    read: true,
   },
 ]
 
@@ -82,11 +88,52 @@ export default function Messages() {
   const [messageText, setMessageText] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>(chatData)
   const [showImageOptions, setShowImageOptions] = useState(false)
+  const [messagesList, setMessagesList] = useState<Message[]>(messagesData)
+
+  // Mark message as read
+  const markAsRead = (id: string) => {
+    setMessagesList(
+      messagesList.map(message =>
+        message.id === id ? { ...message, read: true, unreadCount: undefined } : message
+      )
+    );
+  };
+
+  // Mark message as unread
+  const markAsUnread = (id: string) => {
+    setMessagesList(
+      messagesList.map(message =>
+        message.id === id ? { ...message, read: false, unreadCount: message.unreadCount || 1 } : message
+      )
+    );
+  };
+
+  const renderRightActions = (id: string) => {
+    return (
+      <TouchableOpacity
+        style={[styles.swipeAction, { backgroundColor: '#4CAF50', height: 70, borderRadius: 10 }]}
+        onPress={() => markAsRead(id)}
+      >
+        <Text style={styles.swipeActionText}>Okundu</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderLeftActions = (id: string) => {
+    return (
+      <TouchableOpacity
+        style={[styles.swipeAction, { backgroundColor: '#2196F3', height: 70, borderRadius: 10 }]}
+        onPress={() => markAsUnread(id)}
+      >
+        <Text style={styles.swipeActionText}>Okunmadı</Text>
+      </TouchableOpacity>
+    );
+  };
 
   // Filter messages by sender name
   const filteredMessages = searchText.trim() === ''
-    ? messagesData
-    : messagesData.filter(message =>
+    ? messagesList
+    : messagesList.filter(message =>
       message.name.toLowerCase().includes(searchText.toLowerCase())
     );
 
@@ -241,7 +288,7 @@ export default function Messages() {
                       theme="green"
                       onPress={() => handleImageSelection('camera')}
                     >
-                      Take a Photo
+                      Fotoğraf Çek
                     </Button>
                     <Button
                       size="$4"
@@ -249,14 +296,14 @@ export default function Messages() {
                       theme="blue"
                       onPress={() => handleImageSelection('gallery')}
                     >
-                      Choose from Gallery
+                      Galeriye Git
                     </Button>
                     <Button
                       size="$4"
                       theme="red"
                       onPress={() => setShowImageOptions(false)}
                     >
-                      Cancel
+                      İptal Et
                     </Button>
                   </YStack>
                 </AlertDialog.Content>
@@ -323,44 +370,51 @@ export default function Messages() {
               keyExtractor={(item) => item.id}
               contentContainerStyle={{ paddingBottom: 16 }}
               renderItem={({ item }) => (
-                <Card
-                  elevate
-                  size="$5"
-                  height={70}
-                  display='flex'
-                  justifyContent='center'
-                  mb="$3"
-                  pressStyle={{ scale: 0.97 }}
-                  onPress={() => setSelectedChat(item)}
-                  bg={item.unreadCount ? '$green4' : '$gray2'}
+                <Swipeable
+                  renderRightActions={() => renderRightActions(item.id)}
+                  renderLeftActions={() => renderLeftActions(item.id)}
                 >
-                  <XStack ai="center" space="$3" p="$2">
-                    <Avatar circular size="$4">
-                      <Avatar.Image source={{ uri: item.avatar }} />
-                    </Avatar>
-                    <YStack f={1}>
-                      <XStack jc="space-between" ai="center">
-                        <Text fontWeight="bold">{item.name}</Text>
-                        <Text fontSize="$2" color={item.unreadCount ? 'white' : '$gray8'}>
-                          {item.time}
-                        </Text>
-                      </XStack>
-                      <XStack jc="space-between" ai="center">
-                        <Text color={item.unreadCount ? "white" : '$gray8'} numberOfLines={1}>
-                          {item.lastMessage}
-                        </Text>
-                        {item.unreadCount && (
-                          <Card elevate size="$2" bc="$green8" br="$10" ai="center" jc="center" style={{ width: 16, height: 16 }}>
-                            <Text fontSize="$1" color="white">
-                              {item.unreadCount}
-                            </Text>
-                          </Card>
-                        )}
-                      </XStack>
-                    </YStack>
-
-                  </XStack>
-                </Card>
+                  <Card
+                    elevate
+                    size="$5"
+                    height={70}
+                    display='flex'
+                    justifyContent='center'
+                    mb="$3"
+                    pressStyle={{ scale: 0.97 }}
+                    onPress={() => {
+                      setSelectedChat(item);
+                      markAsRead(item.id);
+                    }}
+                    bg={item.unreadCount ? '$green4' : '$gray2'}
+                  >
+                    <XStack ai="center" space="$3" p="$2">
+                      <Avatar circular size="$4">
+                        <Avatar.Image source={{ uri: item.avatar }} />
+                      </Avatar>
+                      <YStack f={1}>
+                        <XStack jc="space-between" ai="center">
+                          <Text fontWeight="bold">{item.name}</Text>
+                          <Text fontSize="$2" color={item.unreadCount ? 'white' : '$gray8'}>
+                            {item.time}
+                          </Text>
+                        </XStack>
+                        <XStack jc="space-between" ai="center">
+                          <Text color={item.unreadCount ? "white" : '$gray8'} numberOfLines={1}>
+                            {item.lastMessage}
+                          </Text>
+                          {item.unreadCount && (
+                            <Card elevate size="$2" bc="$green8" br="$10" ai="center" jc="center" style={{ width: 16, height: 16 }}>
+                              <Text fontSize="$1" color="white">
+                                {item.unreadCount}
+                              </Text>
+                            </Card>
+                          )}
+                        </XStack>
+                      </YStack>
+                    </XStack>
+                  </Card>
+                </Swipeable>
               )}
             />
           </YStack>
@@ -369,3 +423,15 @@ export default function Messages() {
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  swipeAction: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+  },
+  swipeActionText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
