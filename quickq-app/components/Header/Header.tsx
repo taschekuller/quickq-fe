@@ -49,7 +49,7 @@ export default function Header() {
               onPress={() => router.push('/(app)/tabs/(profile)')}
             >
               <Avatar size="$2" alignSelf="center">
-                <Avatar.Image src="https://avatar.iran.liara.run/public/1" />
+                <Avatar.Image src={require("../../assets/images/person1.png")} />
               </Avatar>
             </Button>
           </XStack>

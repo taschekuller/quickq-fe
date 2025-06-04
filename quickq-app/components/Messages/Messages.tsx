@@ -30,7 +30,7 @@ const messagesData: Message[] = [
     lastMessage: 'Görseldeki işlem adımlarını...',
     time: '18:31',
     unreadCount: 5,
-    avatar: 'https://avatar.iran.liara.run/public/1',
+    avatar: require("../../assets/images/person1.png"),
     read: false,
   },
   {
@@ -38,7 +38,7 @@ const messagesData: Message[] = [
     name: 'Doğukan İnce',
     lastMessage: 'Evet, benzer bir yöntem olarak...',
     time: '16:34',
-    avatar: 'https://avatar.iran.liara.run/public/2',
+    avatar: require("../../assets/images/person2.png"),
     read: true,
   },
   {
@@ -46,7 +46,7 @@ const messagesData: Message[] = [
     name: 'Memoş',
     lastMessage: 'Rica ederim, başarılar dilerim.',
     time: 'Yesterday',
-    avatar: 'https://avatar.iran.liara.run/public/3',
+    avatar: require("../../assets/images/person3.png"),
     read: true,
   },
   {
@@ -54,7 +54,7 @@ const messagesData: Message[] = [
     name: 'Betül Küçükkaraduman',
     lastMessage: 'Merhaba, fizik soruyla ilgili...',
     time: '2d',
-    avatar: 'https://avatar.iran.liara.run/public/4',
+    avatar: require("../../assets/images/person4.png"),
     read: true,
   },
 ]

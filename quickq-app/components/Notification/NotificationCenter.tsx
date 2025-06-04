@@ -20,34 +20,34 @@ interface Notification {
 const initialNotifications = [
   {
     id: '1',
-    name: 'John Doe',
-    comment: 'Mentioned you in a comment',
+    name: 'Doğukan İnce',
+    comment: 'Yeni bir soru oluşturdu',
     time: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-    avatar: 'https://avatar.iran.liara.run/public/1',
+    avatar: require("../../assets/images/person1.png"),
     read: false,
   },
   {
     id: '2',
-    name: 'Jane Smith',
-    comment: 'Send you a superlike',
+    name: 'Memoş',
+    comment: 'Sana Superlike gönderdi',
     time: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-    avatar: 'https://avatar.iran.liara.run/public/2',
+    avatar: require("../../assets/images/person2.png"),
     read: true,
   },
   {
     id: '3',
-    name: 'Alex Johnson',
-    comment: 'Replied to your comment',
+    name: 'Betül Küçükkaraduman',
+    comment: 'Bir sorunu yanıtladı',
     time: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-    avatar: 'https://avatar.iran.liara.run/public/3',
+    avatar: require("../../assets/images/person3.png"),
     read: false,
   },
   {
     id: '4',
-    name: 'Sara Wilson',
-    comment: 'Create a new question',
+    name: 'Selin Sındıran',
+    comment: 'Bir yorumda senden bahsetti',
     time: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-    avatar: 'https://avatar.iran.liara.run/public/4',
+    avatar: require("../../assets/images/person4.png"),
     read: true,
   },
 ];

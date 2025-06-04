@@ -19,7 +19,7 @@ export default function App() {
       <Card padding="$4" backgroundColor="transparent">
         <YStack display='flex' alignItems="center" justifyContent="center" gap={"$4"}>
           <Avatar size="$6">
-            <Avatar.Image src="https://avatar.iran.liara.run/public/1" />
+            <Avatar.Image src={require("../../assets/images/person1.png")} />
           </Avatar>
           <YStack style={{ alignItems: 'center' }} gap="$1">
             <Text color="white" fontSize="$6">{username}</Text>
@@ -91,7 +91,7 @@ export default function App() {
     <YStack padding="$4" justifyContent='space-between' flex={1}>
       <YStack gap="$4">
         <Avatar size="$6" alignSelf="center">
-          <Avatar.Image src="https://avatar.iran.liara.run/public/1" />
+          <Avatar.Image src={require("../../assets/images/person1.png")} />
         </Avatar>
         <Text color="white" alignSelf="center" marginBottom="$4">{email}</Text>
         <Input value={username} onChangeText={setUsername} placeholder="Ad Soyad" />
