@@ -4,7 +4,7 @@ import { Card, Text, XStack, YStack, Avatar, Button, Input, ScrollView, Label, S
 import {
   MessageCircleMore, Bookmark, SlidersHorizontal, ChevronLeft, BookmarkCheck,
   Plus, FileText, MessageCircleQuestion, Users, UploadCloud, Camera, Check, ChevronDown, ChevronUp,
-  Send, Reply
+  Send, Reply, CircleX
 } from '@tamagui/lucide-icons';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import * as ImagePicker from 'expo-image-picker';
@@ -514,6 +514,10 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
     }
   };
 
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
   const handleSubmit = () => {
     if (!title.trim()) {
       Alert.alert('Uyarı', 'Lütfen bir başlık giriniz');
@@ -579,6 +583,34 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
           onChangeText={setDescription}
         />
 
+        <Label>Etiketler</Label>
+        <XStack space="$2" alignItems="center">
+          <Input
+            flex={1}
+            placeholder="Etiket ekle (örn: #matematik)"
+            value={newTag}
+            onChangeText={setNewTag}
+          />
+          <Button onPress={handleAddTag} disabled={!newTag.trim()}>
+            Ekle
+          </Button>
+        </XStack>
+
+        <XStack flexWrap="wrap" gap="$2" mt="$2">
+          {tags.map((tag, index) => (
+            <Button
+              key={index}
+              size="$2"
+              theme="blue"
+              alignSelf="flex-start"
+              onPress={() => handleRemoveTag(tag)}
+              icon={<XStack ml="$1"><CircleX size={12} /></XStack>}
+            >
+              <Text fontSize="$3">{tag}</Text>
+            </Button>
+          ))}
+        </XStack>
+
         <ImagePreview
           uri={imageUri}
           onRemove={() => setImageUri(undefined)}
@@ -606,6 +638,20 @@ const QuestionCreate = ({ onSubmit }: { onSubmit: (question: Partial<Question>) 
 const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [tags, setTags] = useState<string[]>(['#post']);
+  const [newTag, setNewTag] = useState('');
+  const [imageUri, setImageUri] = useState<string | undefined>();
+
+  const handleAddTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
 
   const handleSubmit = () => {
     if (!title.trim()) {
@@ -618,8 +664,9 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
       user: 'Kullanıcı',
       topic: description || 'Açıklama yok',
       createdAt: 'Şimdi',
-      tags: ['post'],
-      type: 'post'
+      tags: tags.map(tag => tag.startsWith('#') ? tag.substring(1) : tag),
+      type: 'post',
+      imageUri
     };
 
     onSubmit(newPost);
@@ -642,11 +689,42 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
           onChangeText={setDescription}
         />
 
-        <Label>Görsel Yükle</Label>
-        <XStack space="$4">
-          <Button icon={UploadCloud}>Fotoğraf Yükle</Button>
-          <Button icon={Camera}>Fotoğraf Çek</Button>
+        <Label>Etiketler</Label>
+        <XStack space="$2" alignItems="center">
+          <Input
+            flex={1}
+            placeholder="Etiket ekle (örn: #motivasyon)"
+            value={newTag}
+            onChangeText={setNewTag}
+          />
+          <Button onPress={handleAddTag} disabled={!newTag.trim()}>
+            Ekle
+          </Button>
         </XStack>
+
+        <XStack flexWrap="wrap" gap="$2" mt="$2">
+          {tags.map((tag, index) => (
+            <Button
+              key={index}
+              size="$2"
+              theme="blue"
+              alignSelf="flex-start"
+              onPress={() => handleRemoveTag(tag)}
+              icon={<XStack ml="$1"><CircleX size={12} /></XStack>}
+            >
+              <Text fontSize="$3">{tag}</Text>
+            </Button>
+          ))}
+        </XStack>
+
+        <ImagePreview
+          uri={imageUri}
+          onRemove={() => setImageUri(undefined)}
+        />
+
+        <ImagePickerComponent
+          onImageSelected={(uri) => setImageUri(uri)}
+        />
 
         <Button
           mt="$4"
