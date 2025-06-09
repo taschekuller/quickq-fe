@@ -797,29 +797,11 @@ const PostCreate = ({ onSubmit }: { onSubmit: (post: Partial<Question>) => void 
   return (
     <ScrollView>
       <YStack space="$4" marginBottom={20}>
-        <Label>Yazı Başlığı *</Label>
+        <Label>Post Başlığı *</Label>
         <Input
           placeholder="Örn: YKS Motivasyonu"
           value={title}
           onChangeText={setTitle}
-        />
-
-        <Label>Sınıf</Label>
-        <GradeSelect
-          value={selectedGrade}
-          onValueChange={setSelectedGrade}
-        />
-
-        <Label>Ders</Label>
-        <SubjectSelect
-          value={selectedClass}
-          onValueChange={setSelectedClass}
-        />
-
-        <Label>Ünite</Label>
-        <UnitSelect
-          value={selectedUnit}
-          onValueChange={setSelectedUnit}
         />
 
         <Label>Açıklama *</Label>
